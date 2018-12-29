@@ -88,9 +88,11 @@ void Sledge::save_file(const char * const path) {
 }
 
 void Sledge::send_programs(int min, int max) {
+  for (int i = min; i <= max; ++i)
+    send_sysex(&programs[i], SLEDGE_PROGRAM_SYSEX_LEN);
 }
 
-void Sledge::send_sysex(const byte * const data, const UInt32 bytes_to_send) {
+OSStatus Sledge::send_sysex(const byte * const data, const UInt32 bytes_to_send) {
   MIDISysexSendRequest req;
 
   req.destination = output;
@@ -102,11 +104,10 @@ void Sledge::send_sysex(const byte * const data, const UInt32 bytes_to_send) {
 
   while (req.bytesToSend > 0) {
     OSStatus result = MIDISendSysex(&req);
-    if (result != 0) {
-      fprintf(stderr, "MIDISendSysex error: %d\n", result);
-      return;
-    }
+    if (result != 0)
+      return result;
   }
+  return 0;
 }
 
 void Sledge::dump_sysex(const char * const msg) {

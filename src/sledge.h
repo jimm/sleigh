@@ -25,7 +25,7 @@ public:
   void save_file(const char * const path);
   void send_programs(int min, int max);
 
-  void send_sysex(const byte * const sysex, UInt32 bytes_to_send);
+  OSStatus send_sysex(const byte * const sysex, UInt32 bytes_to_send);
   void dump_sysex(const char * const msg);
 
 private:
