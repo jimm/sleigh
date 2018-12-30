@@ -2,7 +2,8 @@
 #include "sledge.h"
 #include "utils.h"
 
-static char c_str_buf[SLEDGE_NAME_LEN + 1];
+FILE *debug_fp;
+char c_str_buf[SLEDGE_NAME_LEN + 1];
 
 // Copies program name to the pre-allocated buffer c_str_buf, strips off the
 // trailing spaces, and returns a pointer to that buffer. Obviously not
@@ -43,4 +44,20 @@ void dump_hex(byte *bytes, size_t size, const char * const msg) {
     size -= chunk_len;
     offset += chunk_len;
   }
+}
+
+void init_debug(bool debug) {
+  debug_fp = fopen(debug ? "/tmp/sleigh_debug.log" : "/dev/null", "w+");
+}
+
+void cleanup_debug() {
+  fclose(debug_fp);
+}
+
+void debug_timestamp() {
+  char tstamp[32];
+  time_t t = time(0);
+  
+  strftime(tstamp, 32, "%Y-%m-%d %H:%M:%S", localtime(&t));
+  fprintf(debug_fp, "[%s] ", tstamp);
 }

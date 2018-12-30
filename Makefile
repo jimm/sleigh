@@ -1,12 +1,12 @@
 NAME = sleigh
-# DEBUG = -DDEBUG -DDEBUG_STDERR
+DEBUG = -DDEBUG -DDEBUG_STDERR
 MACOS_VER = 10.9
 CPPFLAGS += -mmacosx-version-min=$(MACOS_VER) -MD -MP -g $(DEBUG)
 LIBS = -framework AudioToolbox -framework CoreMIDI -framework Foundation \
 	-lc -lc++ -lncurses
 LDFLAGS += $(LIBS) -macosx_version_min $(MACOS_VER)
 
-SRC = $(wildcard src/*.cpp)
+SRC = $(wildcard src/*.cpp) $(wildcard src/curses/*.cpp)
 OBJS = $(SRC:%.cpp=%.o)
 TEST_SRC = $(wildcard test/*.cpp)
 TEST_OBJS = $(TEST_SRC:%.cpp=%.o)
@@ -30,7 +30,7 @@ $(NAME)_test:	$(OBJS) $(TEST_OBJS)
 
 .PHONY: clean
 clean:
-	rm -f $(NAME) $(NAME)_test src/*.o test/*.o
+	rm -f $(NAME) $(NAME)_test $(OBJS) $(TEST_OBJS)
 
 .PHONY: distclean
 distclean: clean

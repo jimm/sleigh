@@ -81,15 +81,9 @@ void Sledge::append_sysex_byte(byte b) {
   sysex[sysex_length++] = b;
 }
 
-void Sledge::load_file(const char * const path) {
-}
-
-void Sledge::save_file(const char * const path) {
-}
-
 void Sledge::send_programs(int min, int max) {
   for (int i = min; i <= max; ++i)
-    send_sysex(&programs[i], SLEDGE_PROGRAM_SYSEX_LEN);
+    send_sysex((byte *)&programs[i], SLEDGE_PROGRAM_SYSEX_LEN);
 }
 
 OSStatus Sledge::send_sysex(const byte * const data, const UInt32 bytes_to_send) {

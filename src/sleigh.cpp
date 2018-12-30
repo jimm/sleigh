@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "sledge.h"
+#include "editor.h"
+#include "utils.h"
+#include "curses/gui.h"
 
 #define CFSTRING_BUF_SIZE 512
 
@@ -15,6 +18,7 @@ typedef unsigned char byte;
 struct opts {
   bool list_devices;
   bool testing;
+  bool debug;
   int channel;
   int input_num;
   int output_num;
@@ -101,6 +105,7 @@ void cleanup_midi() {
 
 void cleanup() {
   cleanup_midi();
+  cleanup_debug();
 }
 
 Sledge * init_midi(struct opts *opts) {
@@ -144,11 +149,14 @@ Sledge * init_midi(struct opts *opts) {
 
 Sledge * initialize(struct opts *opts) {
   atexit(cleanup);
+  init_debug(opts->debug);
   return init_midi(opts);
 }
 
 void run(Sledge *s) {
-  puts("not yet implemented");
+  Editor e(s);
+  GUI gui(&e);
+  gui.run();
 }
 
 void usage(const char *prog_name) {
@@ -180,12 +188,13 @@ void parse_command_line(int argc, char * const *argv, struct opts *opts) {
     {"input", required_argument, 0, 'i'},
     {"output", required_argument, 0, 'o'},
     {"no-midi", no_argument, 0, 'n'},
+    {"debug", no_argument, 0, 'd'},
     {"help", no_argument, 0, 'h'},
     {0, 0, 0, 0}
   };
 
   opts->list_devices = opts->testing = false;
-  while ((ch = getopt_long(argc, argv, "lc:i:o:nh", longopts, 0)) != -1) {
+  while ((ch = getopt_long(argc, argv, "lc:i:o:ndh", longopts, 0)) != -1) {
     switch (ch) {
     case 'l':
       opts->list_devices = true;
@@ -200,6 +209,9 @@ void parse_command_line(int argc, char * const *argv, struct opts *opts) {
       break;
     case 'n':
       opts->testing = true;
+      break;
+    case 'd':
+      opts->debug = true;
       break;
     case 'h': default:
       usage(prog_name);
