@@ -11,9 +11,9 @@ public:
   ~InfoWindow();
 
   void draw();
-};
 
-vector<char *> *info_window_text_to_lines(const char *);
-void info_window_free_lines(vector<char *> *);
+private:
+  void add_help_str(char ch, const char * const str);
+};
 
 #endif /* INFO_WINDOW_H */

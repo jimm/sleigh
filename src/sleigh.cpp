@@ -156,6 +156,7 @@ Sledge * initialize(struct opts *opts) {
 void run(Sledge *s) {
   Editor e(s);
   GUI gui(&e);
+  s->add_observer(&gui);
   gui.run();
 }
 

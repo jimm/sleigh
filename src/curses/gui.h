@@ -2,14 +2,16 @@
 #define GUI_H
 
 #include "../editor.h"
+#include "../sledge.h"
 #include "list_window.h"
+#include "prompt_window.h"
 
 using namespace std;
 
 class InfoWindow;
 class Window;
 
-class GUI {
+class GUI : public Observer {
 public:
   GUI(Editor *);
   ~GUI();
@@ -20,11 +22,14 @@ public:
   int clear_message_seconds() { return clear_msg_secs; }
   int clear_message_id() { return clear_msg_id; }
 
+  virtual void update(Observable *o);
+
 private:
   Editor *editor;
   ListWindow *file_list;
   ListWindow *synth_list;
   InfoWindow *info;
+  PromptWindow *prompt;
   Window *message;
   int clear_msg_secs;
   int clear_msg_id;
@@ -41,7 +46,8 @@ private:
   void prog_changes_seen();
   void load();
   void save();
-  void reload();
+  void transmit();
+  void receive();
   void show_message(string);
   void clear_message_after(int);
 };

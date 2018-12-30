@@ -3,6 +3,7 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include "../consts.h"
+#include "../utils.h"
 #include "gui.h"
 #include "geometry.h"
 #include "info_window.h"
@@ -30,7 +31,6 @@ void GUI::run() {
 void GUI::event_loop() {
   bool done = FALSE;
   int ch, prev_cmd = 0;
-  PromptWindow *pwin;
   string name_regex;
 
   while (!done) {
@@ -55,6 +55,11 @@ void GUI::event_loop() {
     case 's':
       save();
       break;
+    case 't':
+      transmit();
+      break;
+    case 'r':
+      break;
     case 'q':
       done = TRUE;
       break;
@@ -72,6 +77,12 @@ void GUI::event_loop() {
   }
 }
 
+void GUI::update(Observable *_o) {
+  synth_list->draw();
+  wnoutrefresh(synth_list->win);
+  doupdate();
+}
+
 void GUI::config_curses() {
   initscr();
   cbreak();                     /* unbuffered input */
@@ -86,6 +97,7 @@ void GUI::create_windows() {
   synth_list = new ListWindow(geom_synth_rect(), "Sledge Programs");
   info = new InfoWindow(geom_info_rect(), "");
   message = new Window(geom_message_rect(), "");
+  prompt = 0;
 
   scrollok(stdscr, false);
   scrollok(message->win, false);
@@ -118,6 +130,8 @@ void GUI::refresh_all() {
   wnoutrefresh(synth_list->win);
   wnoutrefresh(info->win);
   wnoutrefresh(message->win);
+  if (prompt != 0)
+    wnoutrefresh(prompt->win);
 
   doupdate();
 }
@@ -142,9 +156,10 @@ void GUI::close_screen() {
 }
 
 void GUI::load() {
-  PromptWindow *pwin = new PromptWindow("Load File");
-  string path = pwin->gets();
-  delete pwin;
+  prompt = new PromptWindow("Load File");
+  string path = prompt->gets();
+  delete prompt;
+  prompt = 0;
 
   if (path.length() == 0) {
     show_message("error: no file loaded");
@@ -161,9 +176,10 @@ void GUI::load() {
 }
 
 void GUI::save() {
-  PromptWindow *pwin = new PromptWindow("Save File");
-  string path = pwin->gets();
-  delete pwin;
+  prompt = new PromptWindow("Save File");
+  string path = prompt->gets();
+  delete prompt;
+  prompt = 0;
 
   if (path.length() == 0) {
     show_message("error: no file saved");
@@ -177,6 +193,9 @@ void GUI::save() {
   }
   else
     show_message(editor->error_message);
+}
+
+void GUI::transmit() {
 }
 
 void GUI::show_message(string msg) {

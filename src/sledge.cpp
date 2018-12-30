@@ -65,7 +65,7 @@ void Sledge::sysex_received() {
   int prog_num = sysex[5] * 0x80 + sysex[6];
   memcpy(&programs[prog_num], sysex, SLEDGE_PROGRAM_SYSEX_LEN);
 
-  // TODO notify somebody that a new program has arrived
+  changed();
 }
 
 void Sledge::clear_sysex_buffer() {

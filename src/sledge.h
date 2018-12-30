@@ -2,13 +2,14 @@
 #define SLEDGE_H
 
 #include <CoreMIDI/MIDIServices.h>
+#include "observable.h"
 #include "sledge_program.h"
 
 using namespace std;
 
 typedef unsigned char byte;
 
-class Sledge {
+class Sledge : public Observable {
 public:
   byte channel;
   SledgeProgram programs[1000];
@@ -39,6 +40,7 @@ private:
   void sysex_received();
   void clear_sysex_buffer();
   void append_sysex_byte(byte b);
+  void send_notification();
 };
 
 #endif /* SLEDGE_H */
