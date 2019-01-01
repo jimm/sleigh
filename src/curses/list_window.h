@@ -2,26 +2,25 @@
 #define LIST_WINDOW_H
 
 #include "../sledge_program.h"
+#include "../editor.h"
 #include "window.h"
 
 using namespace std;
 
 class ListWindow : public Window {
 public:
-  SledgeProgram *programs;
-  int sel_min;
-  int sel_max;
-  int offset;
-  int curr_index;
-
   ListWindow(struct rect, const char *);
 
-  void set_contents(const char *title, SledgeProgram *programs,
-                    int curr_idx, int sel_min, int sel_max);
-  void make_visible(int idx) { curr_index = idx; }
+  void set_contents(Editor *editor, int editor_type);
   void draw();
 
+  int index_at(int row, int col) { return row + offset - 1; }
+
 private:
+  Editor *editor;
+  int editor_type;
+  int offset;
+
   char * prog_num_str(int i);
 };
 

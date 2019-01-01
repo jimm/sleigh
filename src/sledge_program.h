@@ -24,7 +24,8 @@
 
 typedef unsigned char byte;
 
-struct SledgeProgram {
+class SledgeProgram {
+public:
   byte sysex;                   // f0
   byte waldorf;                 // WALDORF_MANUFACTURER_ID
   byte header[3];               // 15 00 10
@@ -38,6 +39,14 @@ struct SledgeProgram {
   byte category;                // SLEDGE_CATEGORY_*
   byte data2[4];                // three zeroes, then one byte
   byte eox;                     // f7
+
+  void update();                // Call this when data changes
+  const char * const name_str() { return name_string; }
+  const char * const category_str() { return category_string; }
+
+private:
+  char name_string[SLEDGE_NAME_LEN + 1];
+  char category_string[5];
 };
 
 

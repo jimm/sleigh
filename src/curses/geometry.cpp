@@ -69,3 +69,8 @@ rect geom_message_rect() {
   r.width = COLS;
   return r;
 }
+
+bool point_in_rect(int x, int y, rect r) {
+  return x >= r.col && y >= r.row &&
+    x < r.col + r.width && y < r.row + r.height;
+}

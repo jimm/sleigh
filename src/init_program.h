@@ -3,6 +3,6 @@
 
 #include "sledge_program.h"
 
-extern byte init_program[SLEDGE_PROGRAM_SYSEX_LEN];
+extern SledgeProgram init_program;
 
 #endif /* INIT_PROGRAM_H */

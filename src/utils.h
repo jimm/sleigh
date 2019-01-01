@@ -8,10 +8,6 @@
 typedef unsigned char byte;
 
 extern FILE *debug_fp;
-extern char c_str_buf[SLEDGE_NAME_LEN + 1];
-
-// Writes program name into c_str_buf and returns pointer to c_str_buf.
-char * c_name(SledgeProgram *prog);
 
 void dump_hex(byte *bytes, size_t size, const char * const msg);
 

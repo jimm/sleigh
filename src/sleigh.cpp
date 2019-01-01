@@ -146,14 +146,20 @@ void Sleigh::init_midi(struct opts *opts) {
 }
 
 void Sleigh::initialize(struct opts *opts) {
-  atexit(cleanup);
   init_debug(opts->debug);
+  debug("Sleigh::initialize\n");
+  atexit(cleanup);
   init_midi(opts);
 }
 
 void Sleigh::run() {
+  debug("Sleigh::run\n");
   Editor e(sledge, getenv("SLEIGH_SYSEX_DIR"));
   GUI gui(&e);
+  // The editor must be added as an observer before the GUI is, so that
+  // programs received from the Sledge update the editor's current index
+  // before the GUI is redrawn.
+  sledge->add_observer(&e);
   sledge->add_observer(&gui);
   gui.run();
   sledge->remove_observer(&gui);
@@ -163,24 +169,16 @@ void Sleigh::usage(const char *prog_name) {
   printf("usage: %s\n", basename((char *)prog_name));
   puts("[-l] [-i N] [-o N] [-n] [-h] file");
   puts("");
-  puts("    -l or --list-ports");
-  puts("        List all attached MIDI ports");
-  puts("");
-  puts("    -i or --input N");
-  puts("        Input number");
-  puts("");
-  puts("    -o or --output N");
-  puts("        Output number");
-  puts("");
-  puts("    -n or --no-midi");
-  puts("        No MIDI (ignores bad/unknown MIDI ports)");
-  puts("");
-  puts("    -h or --help");
-  puts("        This help");
+  puts("    -l or --list-ports  List all attached MIDI ports");
+  puts("    -i or --input N     Input number");
+  puts("    -o or --output N    Output number");
+  puts("    -c or --channel N   Sledge MIDI channel (1-16)");
+  puts("    -n or --no-midi     No MIDI (ignores bad/unknown MIDI ports)");
+  puts("    -h or --help        This help");
 }
 
 void Sleigh::parse_command_line(int argc, char * const *argv, struct opts *opts) {
-  int ch, testing = false;
+  int ch;
   char *prog_name = argv[0];
   static struct option longopts[] = {
     {"list", no_argument, 0, 'l'},

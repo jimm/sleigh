@@ -3,17 +3,6 @@
 #include "utils.h"
 
 FILE *debug_fp;
-char c_str_buf[SLEDGE_NAME_LEN + 1];
-
-// Copies program name to the pre-allocated buffer c_str_buf, strips off the
-// trailing spaces, and returns a pointer to that buffer. Obviously not
-// thread safe.
-char * c_name(SledgeProgram *prog) {
-  memcpy(c_str_buf, prog->name, SLEDGE_NAME_LEN);
-  for (char *p = &c_str_buf[SLEDGE_NAME_LEN-1]; p >= c_str_buf && *p == ' '; --p)
-    *p = 0;
-  return c_str_buf;
-}
 
 void dump_hex(byte *bytes, size_t size, const char * const msg) {
   printf("%s\n", msg);

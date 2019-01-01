@@ -64,6 +64,7 @@ void Sledge::sysex_received() {
 
   last_received_prog_num = sysex[5] * 0x80 + sysex[6];
   memcpy(&programs[last_received_prog_num], sysex, SLEDGE_PROGRAM_SYSEX_LEN);
+  programs[last_received_prog_num].update();
 
   changed();
 }
@@ -119,10 +120,7 @@ OSStatus Sledge::program_change(int prog_num) {
   p->data[3] = PROGRAM_CHANGE + channel;
   p->data[4] = prog_low;
 
-  debug("program change high %d, low %d, channel %d\n", prog_high, prog_low, channel);
-
   return MIDISend(app_output_port, sledge_input_endpoint, &packet_list);
-  
 }
 
 void Sledge::dump_sysex(const char * const msg) {

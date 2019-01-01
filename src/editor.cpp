@@ -4,20 +4,24 @@
 #include "editor.h"
 #include "utils.h"
 
-Editor::Editor(Sledge *s, const char * const sysex_dir)
-  : sledge(s), default_sysex_dir(sysex_dir),
-    curr_program(0), programs_sel_min(-1), programs_sel_max(-1),
-    curr_sledge(0), sledge_sel_min(-1), sledge_sel_max(-1)
-{
-  sledge->add_observer(this);
+#define toggle(x) ((x) = !(x))
 
-  memset((void *)programs, 1000, SLEDGE_PROGRAM_SYSEX_LEN);
-  for (int i = 0; i < 1000; ++i)
-    programs[i].sysex = 0;
+Editor::Editor(Sledge *s, const char * const sysex_dir)
+  : sledge(s), default_sysex_dir(sysex_dir)
+{
+  pstate[EDITOR_FILE].programs = programs;
+  pstate[EDITOR_SLEDGE].programs = sledge->programs;
+  for (int i = 0; i < 2; ++i) {
+    pstate[i].curr = 0;
+    for (int j = 0; j < 1000; ++j) {
+      pstate[i].programs[j].sysex = 0;
+      pstate[i].selected[j] = false;
+    }
+  }
 }
 
 void Editor::update(Observable *_o) {
-  curr_sledge = sledge->last_received_program();
+  pstate[EDITOR_SLEDGE].curr = sledge->last_received_program();
 }
 
 int Editor::load(const char * const path) {
@@ -31,13 +35,14 @@ int Editor::load(const char * const path) {
   }
   while (fread(&prog, SLEDGE_PROGRAM_SYSEX_LEN, 1, fp) == 1) {
     int prog_num = prog.prog_high * 0x80 + prog.prog_low;
-    memcpy(&programs[prog_num], &prog, SLEDGE_PROGRAM_SYSEX_LEN);
+    memcpy(&pstate[EDITOR_FILE].programs[prog_num], &prog, SLEDGE_PROGRAM_SYSEX_LEN);
+    pstate[EDITOR_FILE].programs[prog_num].update();
   }
   fclose(fp);
 
-  curr_program = 0;
-  programs_sel_min = -1;
-  programs_sel_max = -1;
+  pstate[EDITOR_FILE].curr = 0;
+  for (int i = 0; i < 1000; ++i)
+    pstate[EDITOR_FILE].selected[i] = false;
   return 0;
 }
 
@@ -49,11 +54,52 @@ int Editor::save(const char * const path) {
     debug("%s\n", error_message);
     return errno;
   }
+  ProgramState *state = &pstate[EDITOR_SLEDGE];
   for (int i = 0; i < 1000; ++i)
-    if (programs[i].sysex != 0)
-      fwrite(&programs[i], SLEDGE_PROGRAM_SYSEX_LEN, 1, fp);
+    if (state->programs[i].sysex != 0)
+      fwrite(&state->programs[i], SLEDGE_PROGRAM_SYSEX_LEN, 1, fp);
   fclose(fp);
   return 0;
+}
+
+void Editor::select(int which, int index, bool shifted) {
+  ProgramState *state = &pstate[which];
+  int old_curr = state->curr;
+
+  state->curr = index;
+
+  if (!shifted) {
+    bool was_selected = state->selected[state->curr];
+    for (int i = 0; i < 1000; ++i)
+      state->selected[i] = false;
+    state->selected[state->curr] = !was_selected;
+    return;
+  }
+
+  if (old_curr == state->curr) {
+    toggle(state->selected[state->curr]);
+    return;
+  }
+
+  int curr_min = 1001, curr_max = -1;
+  for (int i = 0; i < 1000; ++i) {
+    if (state->selected[i]) {
+      if (i < curr_min) curr_min = i;
+      if (i > curr_max) curr_max = i;
+    }
+  }
+
+  if (state->curr >= curr_min && state->curr <= curr_max) {
+    toggle(state->selected[state->curr]);
+  }
+  else if (state->curr < curr_min) {
+    for (int i = state->curr; i < curr_min; ++i)
+      state->selected[i] = true;
+  }
+  else if (state->curr > curr_max) {
+    for (int i = curr_max + 1; i <= state->curr; ++i)
+      state->selected[i] = true;
+  }
 }
 
 // Expands tilde or env var at beginning of path and writes expanded path

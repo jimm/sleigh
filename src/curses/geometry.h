@@ -12,4 +12,6 @@ rect geom_help_rect();
 rect geom_prompt_rect();
 rect geom_message_rect();
 
+bool point_in_rect(int x, int y, rect rect);
+
 #endif /* GEOMETRY_H */

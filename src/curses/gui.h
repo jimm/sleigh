@@ -2,6 +2,8 @@
 #define GUI_H
 
 #include <CoreMIDI/MIDIServices.h>
+#include <ncurses.h>
+#include <time.h>
 #include "../editor.h"
 #include "../sledge.h"
 #include "list_window.h"
@@ -34,6 +36,8 @@ private:
   Window *message;
   int clear_msg_secs;
   int clear_msg_id;
+  mmask_t old_mouse_mask;
+  timespec last_mouse_click_time;
 
   void event_loop();
   void config_curses();
@@ -49,6 +53,7 @@ private:
   void save();
   void transmit();
   void goto_program();
+  void handle_mouse(MEVENT *event);
   void show_message(string);
   void clear_message_after(int);
 };

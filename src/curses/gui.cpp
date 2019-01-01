@@ -10,9 +10,12 @@
 #include "list_window.h"
 #include "prompt_window.h"
 
+#define DEBOUNCE_MSECS 100
+
 GUI::GUI(Editor *e)
   : editor(e), clear_msg_id(0)
 {
+  clock_gettime(CLOCK_REALTIME, &last_mouse_click_time);
 }
 
 GUI::~GUI() {
@@ -31,7 +34,7 @@ void GUI::run() {
 void GUI::event_loop() {
   bool done = FALSE;
   int ch, prev_cmd = 0;
-  string name_regex;
+  MEVENT event;
 
   while (!done) {
     refresh_all();
@@ -57,6 +60,10 @@ void GUI::event_loop() {
     case 'q':
       done = TRUE;
       break;
+    case KEY_MOUSE:
+      if (getmouse(&event) == OK)
+        handle_mouse(&event);
+      break;
     case KEY_RESIZE:
       resize_windows();
       break;
@@ -69,7 +76,6 @@ void GUI::update(Observable *o) {
   Sledge *sledge = (Sledge *)o;
   int prog_num = sledge->last_received_program();
 
-  synth_list->make_visible(prog_num);
   synth_list->draw();
   wnoutrefresh(synth_list->win);
 
@@ -85,12 +91,13 @@ void GUI::config_curses() {
   noecho();                     /* do not show typed keys */
   keypad(stdscr, true);         /* enable arrow keys and window resize as keys */
   nl();                         /* return key => newline, \n => \r\n */
+  mousemask(BUTTON1_PRESSED | BUTTON_SHIFT, &old_mouse_mask);
   curs_set(0);                  /* cursor: 0 = invisible, 1 = normal */
 }
 
 void GUI::create_windows() {
-  file_list = new ListWindow(geom_file_rect(), 0);
-  synth_list = new ListWindow(geom_synth_rect(), 0);
+  file_list = new ListWindow(geom_file_rect(), "Loaded File");
+  synth_list = new ListWindow(geom_synth_rect(), "Sledge Programs / Save to File");
   info = new InfoWindow(geom_info_rect(), "");
   message = new Window(geom_message_rect(), "");
   prompt = 0;
@@ -133,16 +140,15 @@ void GUI::refresh_all() {
 }
 
 void GUI::set_window_data() {
-  file_list->set_contents("Loaded File", editor->programs,
-                          editor->curr_program,
-                          editor->programs_sel_min, editor->programs_sel_max);
-  synth_list->set_contents("Sledge Programs / Save to File", editor->sledge->programs,
-                           editor->curr_sledge,
-                           editor->sledge_sel_min, editor->sledge_sel_max);
+  file_list->set_contents(editor, EDITOR_FILE);
+  synth_list->set_contents(editor, EDITOR_SLEDGE);
 }
 
 void GUI::close_screen() {
+  mmask_t discarded;
+
   curs_set(1);
+  mousemask(old_mouse_mask, &discarded);
   echo();
   nl();
   noraw();
@@ -206,6 +212,40 @@ void GUI::goto_program() {
     ostringstream ostr;
     ostr << "error sending program change: " << status;
     show_message(ostr.str());
+  }
+}
+
+void GUI::handle_mouse(MEVENT *event) {
+  // Don't do anything if previous click was within DEBOUNCE_MSECS milliseconds.
+  timespec now;
+  long then_msecs, now_msecs, diff_msecs;
+  clock_gettime(CLOCK_REALTIME, &now);
+  then_msecs = last_mouse_click_time.tv_sec * 1000L +
+    (last_mouse_click_time.tv_nsec/1000000L);
+  now_msecs = now.tv_sec * 1000L + (now.tv_nsec/1000000L);
+  diff_msecs = now_msecs - then_msecs;
+
+  clock_gettime(CLOCK_REALTIME, &last_mouse_click_time);
+
+  if (diff_msecs < DEBOUNCE_MSECS) {
+    clock_gettime(CLOCK_REALTIME, &last_mouse_click_time);
+    return;
+  }
+
+  rect left_rect = geom_file_rect();
+  rect right_rect = geom_synth_rect();
+  bool shifted = (event->bstate & BUTTON_SHIFT) != 0;
+  int index_at_mouse;
+
+  if (point_in_rect(event->x, event->y, left_rect)) {
+    index_at_mouse = file_list->index_at(event->y - left_rect.row,
+                                         event->x - left_rect.col);
+    editor->select(EDITOR_FILE, index_at_mouse, shifted);
+  }
+  else if (point_in_rect(event->x, event->y, right_rect)) {
+    index_at_mouse = synth_list->index_at(event->y - left_rect.row,
+                                          event->x - left_rect.col);
+    editor->select(EDITOR_SLEDGE, index_at_mouse, shifted);
   }
 }
 

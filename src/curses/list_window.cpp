@@ -4,28 +4,25 @@
 #include "../utils.h"
 #include "list_window.h"
 
-ListWindow::ListWindow(struct rect r, const char *title_prefix)
-  : Window(r, title_prefix), programs(0), curr_index(0),
-    sel_min(-1), sel_max(-1), offset(0)
+ListWindow::ListWindow(struct rect r, const char *title)
+  : Window(r, title), editor(0), offset(0)
 {
 }
 
-void ListWindow::set_contents(const char *title_str, SledgeProgram *sp,
-                              int curr_idx, int selection_min, int selection_max)
-{
-  title = title_str;
-  programs = sp;
-  curr_index = curr_idx;
-  sel_min = selection_min;
-  sel_max = selection_max;
+void ListWindow::set_contents(Editor *ed, int ed_type) {
+  editor = ed;
+  editor_type = ed_type;
 }
 
 void ListWindow::draw() {
   Window::draw();
-  if (programs == 0)
+  if (editor == 0)
     return;
 
+  SledgeProgram *programs = editor->programs_for_type(editor_type);
   int vis_height = visible_height();
+  int curr_index = editor->curr_index_for_type(editor_type);
+
   if (curr_index < offset)
     offset = curr_index;
   else if (curr_index >= offset + vis_height)
@@ -37,19 +34,13 @@ void ListWindow::draw() {
     if (prog->sysex != SYSEX)
       continue;
     wmove(win, row, 1);
-    if (i >= sel_min && i <= sel_max)
+    if (editor->is_selected(editor_type, i))
       wattron(win, A_REVERSE);
     waddch(win, ' ');
-    waddstr(win, prog_num_str(i));
-    waddstr(win, c_name(prog));
+    wprintw(win, "%03d: ", i+1);
+    waddstr(win, prog->name_str());
     waddch(win, ' ');
-    if (i >= sel_min && i <= sel_max)
+    if (editor->is_selected(editor_type, i))
       wattroff(win, A_REVERSE);
   }
-}
-
-// Uses utils c_str_buf.
-char * ListWindow::prog_num_str(int i) {
-  sprintf(c_str_buf, "%03d: ", i+1);
-  return c_str_buf;
 }
