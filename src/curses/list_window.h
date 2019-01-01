@@ -18,6 +18,7 @@ public:
 
   void set_contents(const char *title, SledgeProgram *programs,
                     int curr_idx, int sel_min, int sel_max);
+  void make_visible(int idx) { curr_index = idx; }
   void draw();
 
 private:

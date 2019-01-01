@@ -37,18 +37,6 @@ void GUI::event_loop() {
     refresh_all();
     ch = getch();
     switch (ch) {
-    case 'j': case KEY_DOWN: case ' ':
-      // TODO
-      break;
-    case 'k': case KEY_UP:
-      // TODO
-      break;
-    case 'f': case KEY_RIGHT:
-      // TODO
-      break;
-    case 'b': case KEY_LEFT:
-      // TODO
-      break;
     case 'l':
       load();
       break;
@@ -57,6 +45,12 @@ void GUI::event_loop() {
       break;
     case 't':
       transmit();
+      break;
+    // case '>':
+    //   file_to_synth();
+    //   break;
+    case 'p':
+      goto_program();
       break;
     case 'r':
       break;
@@ -68,18 +62,20 @@ void GUI::event_loop() {
       break;
     }
     prev_cmd = ch;
-
-    // TODO messages and code keys
-    /* msg_name = @pm->message_bindings[ch]; */
-    /* @pm->send_message(msg_name) if msg_name; */
-    /* code_key = @pm->code_bindings[ch]; */
-    /* code_key.call if code_key; */
   }
 }
 
-void GUI::update(Observable *_o) {
+void GUI::update(Observable *o) {
+  Sledge *sledge = (Sledge *)o;
+  int prog_num = sledge->last_received_program();
+
+  synth_list->make_visible(prog_num);
   synth_list->draw();
   wnoutrefresh(synth_list->win);
+
+  if (prompt)
+    wnoutrefresh(prompt->win);
+
   doupdate();
 }
 
@@ -93,8 +89,8 @@ void GUI::config_curses() {
 }
 
 void GUI::create_windows() {
-  file_list = new ListWindow(geom_file_rect(), "File Programs");
-  synth_list = new ListWindow(geom_synth_rect(), "Sledge Programs");
+  file_list = new ListWindow(geom_file_rect(), 0);
+  synth_list = new ListWindow(geom_synth_rect(), 0);
   info = new InfoWindow(geom_info_rect(), "");
   message = new Window(geom_message_rect(), "");
   prompt = 0;
@@ -137,10 +133,10 @@ void GUI::refresh_all() {
 }
 
 void GUI::set_window_data() {
-  file_list->set_contents("File Programs", editor->programs,
+  file_list->set_contents("Loaded File", editor->programs,
                           editor->curr_program,
                           editor->programs_sel_min, editor->programs_sel_max);
-  synth_list->set_contents("Sledge Programs", editor->sledge->programs,
+  synth_list->set_contents("Sledge Programs / Save to File", editor->sledge->programs,
                            editor->curr_sledge,
                            editor->sledge_sel_min, editor->sledge_sel_max);
 }
@@ -198,7 +194,24 @@ void GUI::save() {
 void GUI::transmit() {
 }
 
+void GUI::goto_program() {
+  prompt = new PromptWindow("Go To Program");
+  string prog_num_str = prompt->gets();
+  delete prompt;
+  prompt = 0;
+
+  int prog_num = atoi(prog_num_str.c_str()) - 1;
+  OSStatus status = editor->send_program_change(prog_num);
+  if (status != 0) {
+    ostringstream ostr;
+    ostr << "error sending program change: " << status;
+    show_message(ostr.str());
+  }
+}
+
 void GUI::show_message(string msg) {
+  debug("message: %s\n", msg.c_str());
+
   WINDOW *win = message->win;
   wclear(win);
   message->make_fit(msg, 0);

@@ -1,6 +1,7 @@
 #ifndef GUI_H
 #define GUI_H
 
+#include <CoreMIDI/MIDIServices.h>
 #include "../editor.h"
 #include "../sledge.h"
 #include "list_window.h"
@@ -47,7 +48,7 @@ private:
   void load();
   void save();
   void transmit();
-  void receive();
+  void goto_program();
   void show_message(string);
   void clear_message_after(int);
 };

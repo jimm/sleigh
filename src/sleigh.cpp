@@ -29,6 +29,10 @@ void cleanup_midi() {
   err = MIDIPortDispose(sleigh.my_in_port);
   if (err != 0)
     printf("MIDIPortDispose error: %d\n", err);
+
+  err = MIDIPortDispose(sleigh.my_out_port);
+  if (err != 0)
+    printf("MIDIPortDispose error: %d\n", err);
 }
 
 void cleanup() {
@@ -125,14 +129,20 @@ void Sleigh::init_midi(struct opts *opts) {
     printf("MIDIInputPortCreate error: %d\n", err);
   CFRelease(cf_str);
 
+  // My output port
+  cf_str = cstr_to_cfstring("Sleigh Sledge Program Mapper Output");
+  err = MIDIOutputPortCreate(my_client_ref, cf_str, &my_out_port);
+  if (err != 0)
+    printf("MIDIOutputPortCreate error: %d\n", err);
+  CFRelease(cf_str);
+
   // Connect Sledge output to my input
   // 0 is conn ref_con
   err = MIDIPortConnectSource(my_in_port, sledge_out_end_ref, 0);
   if (err != 0)
     printf("MIDIPortConnectSource error: %d\n", err);
 
-  sledge->set_input(my_in_port);
-  sledge->set_output(sledge_in_end_ref);
+  sledge->set_output(my_out_port, sledge_in_end_ref);
 }
 
 void Sleigh::initialize(struct opts *opts) {
@@ -142,7 +152,7 @@ void Sleigh::initialize(struct opts *opts) {
 }
 
 void Sleigh::run() {
-  Editor e(sledge);
+  Editor e(sledge, getenv("SLEIGH_SYSEX_DIR"));
   GUI gui(&e);
   sledge->add_observer(&gui);
   gui.run();

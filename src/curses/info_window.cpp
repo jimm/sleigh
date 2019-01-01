@@ -20,7 +20,7 @@ void InfoWindow::draw() {
   add_help_str('q', ", quit");
   wmove(win, 2, 1);
   add_help_str('>', "copy ->");
-  add_help_str('<', ", <- copy");
+  add_help_str('p', ", program change");
 }
 
 void InfoWindow::add_help_str(char ch, const char * const str) {

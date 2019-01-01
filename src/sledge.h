@@ -14,11 +14,13 @@ public:
   byte channel;
   SledgeProgram programs[1000];
 
-  Sledge(byte channel);
+  Sledge(byte channel);         // channel 0-15
   ~Sledge();
 
-  void set_input(MIDIEndpointRef input_ref) { input = input_ref; }
-  void set_output(MIDIEndpointRef output_ref) { output = output_ref; }
+  void set_output(MIDIPortRef app_output_ref, MIDIEndpointRef synth_input_ref) {
+    app_output_port = app_output_ref;
+    sledge_input_endpoint = synth_input_ref;
+  }
 
   void receive_midi(const MIDIPacketList *pktlist);
 
@@ -26,16 +28,21 @@ public:
   void save_file(const char * const path);
   void send_programs(int min, int max);
 
+  OSStatus program_change(int prog_num); // prog_num 0-998
+
   OSStatus send_sysex(const byte * const sysex, UInt32 bytes_to_send);
   void dump_sysex(const char * const msg);
 
+  int last_received_program() { return last_received_prog_num; }
+
 private:
-  MIDIEndpointRef input;
-  MIDIEndpointRef output;
+  MIDIPortRef app_output_port;
+  MIDIEndpointRef sledge_input_endpoint;
   bool receiving_sysex;
   byte *sysex;
   size_t sysex_allocated_size;
   size_t sysex_length;
+  int last_received_prog_num;
 
   void sysex_received();
   void clear_sysex_buffer();

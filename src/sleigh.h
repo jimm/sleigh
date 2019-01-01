@@ -22,6 +22,7 @@ public:
   bool running;
   MIDIClientRef my_client_ref;
   MIDIPortRef my_in_port;
+  MIDIPortRef my_out_port;
   MIDIEndpointRef sledge_in_end_ref;
   MIDIEndpointRef sledge_out_end_ref;
 
