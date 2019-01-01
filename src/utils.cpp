@@ -47,7 +47,7 @@ void dump_hex(byte *bytes, size_t size, const char * const msg) {
 }
 
 void init_debug(bool debug) {
-  debug_fp = fopen(debug ? "/tmp/sleigh_debug.log" : "/dev/null", "w+");
+  debug_fp = fopen(debug ? "/tmp/sleigh_debug.log" : "/dev/null", "a");
 }
 
 void cleanup_debug() {
