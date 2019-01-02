@@ -14,6 +14,9 @@ struct opts {
   int channel;
   int input_num;
   int output_num;
+
+  opts() : list_devices(false), testing(false), debug(false),
+           channel(0), input_num(0), output_num(0) {}
 } opts;
 
 class Sleigh {

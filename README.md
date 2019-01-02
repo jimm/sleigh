@@ -23,25 +23,45 @@ $ ./sleigh --input 1 --output 1 --channel 1
 
 # Overview
 
-The left window contains programs loaded from a sysex dump file.
+The left window contains programs loaded from a sysex dump file. Load a file
+using the **l** load command.
 
 The right window contains programs sent from the Sledge and any programs you
-copy over from the left window.
+copy over from the left window. Whenever you send a single program or all
+programs from the Sledge, they are received by Sleigh and displayed in the
+right window.
 
 Programs are not sent to the Sledge until you use the **t** transmit
 command.
 
-Whenever you send a single program or all programs from the Sledge, they are
-received by Slegh and displayed in the right window.
+Save the programs in the Sledge window to a file using the **s** save
+command.
+
+You can select single programs or a range of programs in each window using
+the mouse. To select or deselect a single program, click it. To select a
+range of programs, click on one and shift-click on another. All of the
+programs in the range are selected. To deselect a program in the selected
+range, shift-click it.
+
+To move programs from the left window to the Sledge window, use the **>**
+command. You will be asked for the starting program number. That will be
+where the first of the selected programs are copied. The remaining selected
+programs will be copied to the Sledge sequentially, with no gaps (even if
+there are gaps in the selected programs in the left window.)
+
+You can also copy (**c**) or move (**m**) programs within the Sledge window.
+When moving, the old programs are replaced with the standard Sledge "Init"
+program.
 
 # Example Workflows
 
 ## Backing Up Your Sledge Programs
 
-Send all programs from the Sledge. As they are received, the right Sledge
-window is updated. When they are all received (which will take a few
-minutes), you can then use the **s** save command to save a range of
-programs to a file.
+Send all programs from the Sledge (Press the MIDI button, navigate down,
+select "Send All Programs", and click the data entry knob). As each program
+is received, the right Sledge window is updated. When they are all received
+(which will take a few minutes), you can then use the **s** save command to
+save a range of programs to a file.
 
 ## Loading Programs Into the Sledge
 
@@ -55,11 +75,15 @@ dumps.
 
 # Commands
 
+## Loading and Saving Programs
+
 * **l** - Load a sysex dump file. The loaded file will appear in the
   left window.
 
 * **s** - Save a sysex dump file. The programs that are saved are those in
   the right Sledge window, not the left loaded file window.
+
+## Copying/Moving Programs
 
 * **>** - Copy a range of programs from the left window to the
   right Sledge window.
@@ -69,7 +93,11 @@ dumps.
   **overwritten**, but remember that nothing is sent to the Sledge until you
   explicitly send it using the **t** transmit command.
 
+## Sending Programs to the Sledge
+
 * **t** - Transmit a range of programs to the Sledge.
+
+## Miscellaneous Commands
 
 * **r** - Refresh the screen.
 

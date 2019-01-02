@@ -193,7 +193,6 @@ void Sleigh::parse_command_line(int argc, char * const *argv, struct opts *opts)
     {0, 0, 0, 0}
   };
 
-  opts->list_devices = opts->testing = false;
   while ((ch = getopt_long(argc, argv, "lc:i:o:ndh", longopts, 0)) != -1) {
     switch (ch) {
     case 'l':
