@@ -2,11 +2,10 @@
 #include <string.h>
 #include "window.h"
 
-Window::Window(struct rect r, const char *title_prefix_str)
+Window::Window(struct rect r, const char *title_str)
 {
-  if (title_prefix_str != 0)
-    title_prefix = title_prefix_str;
-  title = "";
+  if (title_str != 0)
+    title = title_str;
   win = newwin(r.height, r.width, r.row, r.col);
   rect = r;
 }
@@ -24,17 +23,11 @@ void Window::move_and_resize(struct rect r) {
 void Window::draw() {
   wclear(win);
   box(win, ACS_VLINE, ACS_HLINE);
-  if (title_prefix.length() == 0 && title.length() == 0)
+
+  if (title.length() == 0)
     return;
 
-  string win_title = " ";
-  if (title_prefix.length() > 0) {
-    win_title += title_prefix;
-    win_title += ": ";
-  }
-  if (title.length() > 0)
-    win_title += title;
-  win_title += " ";
+  string win_title = " " + title + " ";
   make_fit(win_title, 0);
 
   wmove(win, 0, 1);

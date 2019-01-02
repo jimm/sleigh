@@ -105,25 +105,21 @@ void GUI::create_windows() {
   file_list = new ListWindow(geom_file_rect(), "Loaded File");
   synth_list = new ListWindow(geom_synth_rect(), "Sledge Programs / Save to File");
   info = new InfoWindow(geom_info_rect(), "");
-  message = new Window(geom_message_rect(), "");
   prompt = 0;
 
   scrollok(stdscr, false);
-  scrollok(message->win, false);
 }
 
 void GUI::resize_windows() {
   file_list->move_and_resize(geom_file_rect());
   synth_list->move_and_resize(geom_synth_rect());
   info->move_and_resize(geom_info_rect());
-  message->move_and_resize(geom_message_rect());
 }
 
 void GUI::free_windows() {
   delete file_list;
   delete synth_list;
   delete info;
-  delete message;
 }
 
 void GUI::refresh_all() {
@@ -132,13 +128,11 @@ void GUI::refresh_all() {
   file_list->draw();
   synth_list->draw();
   info->draw();
-  message->draw();
 
   wnoutrefresh(stdscr);
   wnoutrefresh(file_list->win);
   wnoutrefresh(synth_list->win);
   wnoutrefresh(info->win);
-  wnoutrefresh(message->win);
   if (prompt != 0)
     wnoutrefresh(prompt->win);
 
@@ -297,19 +291,16 @@ void GUI::handle_mouse(MEVENT *event) {
 
 void GUI::show_message(string msg) {
   debug("message: %s\n", msg.c_str());
-
-  WINDOW *win = message->win;
-  wclear(win);
-  message->make_fit(msg, 0);
-  waddstr(win, msg.c_str());
-  wrefresh(win);
+  mvaddstr(LINES-1, 1, msg.c_str());
+  clrtoeol();
+  refresh();
   doupdate();
 }
 
 void GUI::clear_message() {
-  WINDOW *win = message->win;
-  wclear(win);
-  wrefresh(win);
+  move(LINES-1, 1);
+  clrtoeol();
+  refresh();
   doupdate();
 }
 

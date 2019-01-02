@@ -33,7 +33,6 @@ private:
   ListWindow *synth_list;
   InfoWindow *info;
   PromptWindow *prompt;
-  Window *message;
   int clear_msg_secs;
   int clear_msg_id;
   mmask_t old_mouse_mask;

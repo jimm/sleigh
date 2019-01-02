@@ -10,11 +10,10 @@ using namespace std;
 class Window {
 public:
   WINDOW *win;
-  string title_prefix;
   string title;
   rect rect;
 
-  Window(struct rect r, const char *title_prefix);
+  Window(struct rect r, const char *title);
   virtual ~Window();
 
   void move_and_resize(struct rect);
