@@ -37,7 +37,7 @@ public:
   void file_to_synth(int prog_num);
   void copy_within_synth(int prog_num);
   void move_within_synth(int prog_num);
-
+  void transmit_selected();
   OSStatus send_program_change(int prog_num) {
     return sledge->program_change(prog_num);
   }

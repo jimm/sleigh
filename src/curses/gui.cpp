@@ -47,7 +47,7 @@ void GUI::event_loop() {
       save();
       break;
     case 't':
-      transmit();
+      transmit_selected();
       break;
     case '>':
       file_to_synth();
@@ -239,7 +239,8 @@ void GUI::move_within_synth() {
   editor->move_within_synth(prog_num);
 }
 
-void GUI::transmit() {
+void GUI::transmit_selected() {
+  editor->transmit_selected();
 }
 
 void GUI::goto_program() {
