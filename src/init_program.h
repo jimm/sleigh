@@ -5,4 +5,6 @@
 
 extern SledgeProgram init_program;
 
+void init_init_program();
+
 #endif /* INIT_PROGRAM_H */

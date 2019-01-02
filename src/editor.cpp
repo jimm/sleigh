@@ -3,6 +3,7 @@
 #include <libgen.h>
 #include "editor.h"
 #include "utils.h"
+#include "init_program.h"
 
 #define toggle(x) ((x) = !(x))
 
@@ -35,7 +36,7 @@ int Editor::load(const char * const path) {
   }
   while (fread(&prog, SLEDGE_PROGRAM_SYSEX_LEN, 1, fp) == 1) {
     int prog_num = prog.prog_high * 0x80 + prog.prog_low;
-    memcpy(&pstate[EDITOR_FILE].programs[prog_num], &prog, SLEDGE_PROGRAM_SYSEX_LEN);
+    memcpy((void *)&pstate[EDITOR_FILE].programs[prog_num], &prog, SLEDGE_PROGRAM_SYSEX_LEN);
     pstate[EDITOR_FILE].programs[prog_num].update();
   }
   fclose(fp);
@@ -60,6 +61,39 @@ int Editor::save(const char * const path) {
       fwrite(&state->programs[i], SLEDGE_PROGRAM_SYSEX_LEN, 1, fp);
   fclose(fp);
   return 0;
+}
+
+void Editor::file_to_synth(int prog_num) {
+  copy_or_move(EDITOR_FILE, EDITOR_SLEDGE, prog_num, false);
+}
+
+void Editor::copy_within_synth(int prog_num) {
+  copy_or_move(EDITOR_SLEDGE, EDITOR_SLEDGE, prog_num, false);
+}
+
+void Editor::move_within_synth(int prog_num) {
+  copy_or_move(EDITOR_SLEDGE, EDITOR_SLEDGE, prog_num, true);
+}
+
+void Editor::copy_or_move(int from_type, int to_type, int prog_num, bool init_src)
+{
+  for (int i = 0; i < 1000 && prog_num < 1000; ++i) {
+    if (pstate[from_type].selected[i]) {
+      SledgeProgram *src = &pstate[from_type].programs[i];
+      SledgeProgram *dest = &pstate[to_type].programs[prog_num];
+
+      memcpy((void *)dest, (void *)src, SLEDGE_PROGRAM_SYSEX_LEN);
+      dest->prog_high = (prog_num & 0x3f8) >> 7;
+      dest->prog_low = prog_num & 0x3f;
+      if (init_src) {
+        memcpy((void *)src, (void *)&init_program, SLEDGE_PROGRAM_SYSEX_LEN);
+        src->update();
+      }
+      dest->update();
+      ++prog_num;
+    }
+  }
+  sledge->changed();
 }
 
 void Editor::select(int which, int index, bool shifted) {

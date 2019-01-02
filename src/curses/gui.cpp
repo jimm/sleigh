@@ -49,9 +49,15 @@ void GUI::event_loop() {
     case 't':
       transmit();
       break;
-    // case '>':
-    //   file_to_synth();
-    //   break;
+    case '>':
+      file_to_synth();
+      break;
+    case 'c':
+      copy_within_synth();
+      break;
+    case 'm':
+      move_within_synth();
+      break;
     case 'p':
       goto_program();
       break;
@@ -197,6 +203,42 @@ void GUI::save() {
     show_message(editor->error_message);
 }
 
+void GUI::file_to_synth() {
+  prompt = new PromptWindow("Copy From File to Synth, Starting at Program Number");
+  string prog_num_str = prompt->gets();
+  delete prompt;
+  prompt = 0;
+
+  int prog_num = atoi(prog_num_str.c_str()) - 1;
+  if (prog_num < 0 || prog_num > 998)
+    return;
+  editor->file_to_synth(prog_num);
+}
+
+void GUI::copy_within_synth() {
+  prompt = new PromptWindow("Copy Within Synth, Starting at Program Number");
+  string prog_num_str = prompt->gets();
+  delete prompt;
+  prompt = 0;
+
+  int prog_num = atoi(prog_num_str.c_str()) - 1;
+  if (prog_num < 0 || prog_num > 998)
+    return;
+  editor->copy_within_synth(prog_num);
+}
+
+void GUI::move_within_synth() {
+  prompt = new PromptWindow("Move Within Synth, Starting at Program Number");
+  string prog_num_str = prompt->gets();
+  delete prompt;
+  prompt = 0;
+
+  int prog_num = atoi(prog_num_str.c_str()) - 1;
+  if (prog_num < 0 || prog_num > 998)
+    return;
+  editor->move_within_synth(prog_num);
+}
+
 void GUI::transmit() {
 }
 
@@ -207,6 +249,9 @@ void GUI::goto_program() {
   prompt = 0;
 
   int prog_num = atoi(prog_num_str.c_str()) - 1;
+  if (prog_num < 0 || prog_num > 998)
+    return;
+
   OSStatus status = editor->send_program_change(prog_num);
   if (status != 0) {
     ostringstream ostr;

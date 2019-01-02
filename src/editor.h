@@ -34,6 +34,10 @@ public:
   int load(const char * const path); // returns 0 if OK, else error_message set
   int save(const char * const path); // ditto
 
+  void file_to_synth(int prog_num);
+  void copy_within_synth(int prog_num);
+  void move_within_synth(int prog_num);
+
   OSStatus send_program_change(int prog_num) {
     return sledge->program_change(prog_num);
   }
@@ -42,6 +46,7 @@ public:
 
 private:
   const char * expand_and_save_path(char *path);
+  void copy_or_move(int from_type, int to_type, int prog_num, bool init_src);
 };
 
 #endif /* EDITOR_H */

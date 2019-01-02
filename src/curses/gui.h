@@ -52,6 +52,9 @@ private:
   void load();
   void save();
   void transmit();
+  void file_to_synth();
+  void copy_within_synth();
+  void move_within_synth();
   void goto_program();
   void handle_mouse(MEVENT *event);
   void show_message(string);

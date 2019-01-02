@@ -8,6 +8,7 @@
 #include "editor.h"
 #include "utils.h"
 #include "curses/gui.h"
+#include "init_program.h"
 
 #define CFSTRING_BUF_SIZE 512
 
@@ -149,6 +150,7 @@ void Sleigh::initialize(struct opts *opts) {
   init_debug(opts->debug);
   debug("Sleigh::initialize\n");
   atexit(cleanup);
+  init_init_program();
   init_midi(opts);
 }
 

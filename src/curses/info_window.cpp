@@ -20,6 +20,8 @@ void InfoWindow::draw() {
   add_help_str('q', ", quit");
   wmove(win, 2, 1);
   add_help_str('>', "copy ->");
+  add_help_str('c', ", copy within synth");
+  add_help_str('m', ", move within synth");
   add_help_str('p', ", program change");
 }
 
