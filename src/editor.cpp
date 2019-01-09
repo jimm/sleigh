@@ -158,7 +158,7 @@ const char * Editor::expand_and_save_path(char *path) {
       ++path;
     }
     else {
-      dirname_r(home, p);
+      strcpy(p, dirname(home));
       p += strlen(p);
       *p++ = '/';
       ++path;
