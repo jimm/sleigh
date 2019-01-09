@@ -33,6 +33,7 @@ private:
   ListWindow *synth_list;
   InfoWindow *info;
   PromptWindow *prompt;
+  ListWindow *active_window;
   int clear_msg_secs;
   int clear_msg_id;
   mmask_t old_mouse_mask;
@@ -57,6 +58,8 @@ private:
   void transmit_selected();
   void goto_program();
   void handle_mouse(MEVENT *event);
+  void page_up();
+  void page_down();
   void show_message(string);
   void clear_message_after(int);
 };

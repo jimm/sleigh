@@ -11,9 +11,11 @@
 #include "prompt_window.h"
 
 #define DEBOUNCE_MSECS 100
+#define LEFT_WINDOW 0
+#define RIGHT_WINDOW 1
 
 GUI::GUI(Editor *e)
-  : editor(e), clear_msg_id(0)
+  : editor(e), active_window(0), clear_msg_id(0)
 {
   clock_gettime(CLOCK_REALTIME, &last_mouse_click_time);
 }
@@ -70,9 +72,19 @@ void GUI::event_loop() {
       if (getmouse(&event) == OK)
         handle_mouse(&event);
       break;
+    case KEY_PPAGE:
+      page_up();
+      break;
+    case KEY_NPAGE:
+      page_down();
+      break;
     case KEY_RESIZE:
       resize_windows();
       break;
+    default:                    // DEBUG
+      char buf[256];
+      sprintf(buf, "key %d %o\n", ch, ch);
+      show_message(buf);
     }
     prev_cmd = ch;
   }
@@ -104,6 +116,7 @@ void GUI::config_curses() {
 void GUI::create_windows() {
   file_list = new ListWindow(geom_file_rect(), "Loaded File");
   synth_list = new ListWindow(geom_synth_rect(), "Sledge Programs / Save to File");
+  active_window = file_list;
   info = new InfoWindow(geom_info_rect(), "");
   prompt = 0;
 
@@ -281,12 +294,28 @@ void GUI::handle_mouse(MEVENT *event) {
     index_at_mouse = file_list->index_at(event->y - left_rect.row,
                                          event->x - left_rect.col);
     editor->select(EDITOR_FILE, index_at_mouse, shifted);
+    active_window = file_list;
   }
   else if (point_in_rect(event->x, event->y, right_rect)) {
     index_at_mouse = synth_list->index_at(event->y - left_rect.row,
                                           event->x - left_rect.col);
     editor->select(EDITOR_SLEDGE, index_at_mouse, shifted);
+    active_window = synth_list;
   }
+}
+
+void GUI::page_up() {
+  if (active_window == 0)
+    return;
+  show_message("page up");       // DEBUG
+  active_window->page_up();
+}
+
+void GUI::page_down() {
+  if (active_window == 0)
+    return;
+  show_message("page down");     // DEBUG
+  active_window->page_down();
 }
 
 void GUI::show_message(string msg) {

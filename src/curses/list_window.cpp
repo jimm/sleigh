@@ -21,12 +21,6 @@ void ListWindow::draw() {
 
   SledgeProgram *programs = editor->programs_for_type(editor_type);
   int vis_height = visible_height();
-  int curr_index = editor->curr_index_for_type(editor_type);
-
-  if (curr_index < offset)
-    offset = curr_index;
-  else if (curr_index >= offset + vis_height)
-    offset = curr_index - vis_height + 1;
 
   int row = 1;
   for (int i = offset; i < 1000 && i < offset + vis_height; ++i, ++row) {
@@ -43,4 +37,16 @@ void ListWindow::draw() {
     if (editor->is_selected(editor_type, i))
       wattroff(win, A_REVERSE);
   }
+}
+
+void ListWindow::page_up() {
+  int vis_height = visible_height();
+  if (offset > vis_height)
+    offset -= vis_height;
+}
+
+void ListWindow::page_down() {
+  int vis_height = visible_height();
+  if (offset < 1000 - vis_height)
+    offset += vis_height;
 }

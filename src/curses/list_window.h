@@ -14,6 +14,9 @@ public:
   void set_contents(Editor *editor, int editor_type);
   void draw();
 
+  void page_up();
+  void page_down();
+
   int index_at(int row, int col) { return row + offset - 1; }
 
 private:
