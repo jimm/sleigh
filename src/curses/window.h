@@ -12,10 +12,12 @@ public:
   WINDOW *win;
   string title;
   rect rect;
+  bool active;
 
   Window(struct rect r, const char *title);
   virtual ~Window();
 
+  void set_active(bool a) { active = a; }
   void move_and_resize(struct rect);
   void draw();
   int visible_height();

@@ -16,6 +16,11 @@ void InfoWindow::draw() {
   add_help_str('l', "load");
   add_help_str('s', ", save");
   add_help_str('t', ", transmit to Sledge");
+
+  waddstr(win, ", ");
+  wattron(win, A_REVERSE); waddstr(win, "tab"); wattroff(win, A_REVERSE);
+  waddstr(win, " toggle window");
+
   add_help_str('r', ", refresh");
   add_help_str('q', ", quit");
   wmove(win, 2, 1);

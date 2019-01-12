@@ -25,14 +25,13 @@ void ListWindow::draw() {
   int row = 1;
   for (int i = offset; i < 1000 && i < offset + vis_height; ++i, ++row) {
     SledgeProgram *prog = &programs[i];
-    if (prog->sysex != SYSEX)
-      continue;
     wmove(win, row, 1);
     if (editor->is_selected(editor_type, i))
       wattron(win, A_REVERSE);
     waddch(win, ' ');
     wprintw(win, "%03d: ", i+1);
-    waddstr(win, prog->name_str());
+    if (prog->sysex == SYSEX)
+      waddstr(win, prog->name_str());
     waddch(win, ' ');
     if (editor->is_selected(editor_type, i))
       wattroff(win, A_REVERSE);
@@ -41,7 +40,7 @@ void ListWindow::draw() {
 
 void ListWindow::page_up() {
   int vis_height = visible_height();
-  if (offset > vis_height)
+  if (offset > vis_height-1)
     offset -= vis_height;
 }
 

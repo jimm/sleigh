@@ -68,6 +68,11 @@ void GUI::event_loop() {
     case 'q':
       done = TRUE;
       break;
+    case '\t':
+      active_window->set_active(false);
+      active_window = active_window == file_list ? synth_list : file_list;
+      active_window->set_active(true);
+      break;
     case KEY_MOUSE:
       if (getmouse(&event) == OK)
         handle_mouse(&event);
@@ -117,6 +122,7 @@ void GUI::create_windows() {
   file_list = new ListWindow(geom_file_rect(), "Loaded File");
   synth_list = new ListWindow(geom_synth_rect(), "Sledge Programs / Save to File");
   active_window = file_list;
+  active_window->set_active(true);
   info = new InfoWindow(geom_info_rect(), "");
   prompt = 0;
 

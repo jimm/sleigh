@@ -3,6 +3,7 @@
 #include "window.h"
 
 Window::Window(struct rect r, const char *title_str)
+  : active(false)
 {
   if (title_str != 0)
     title = title_str;
@@ -31,9 +32,11 @@ void Window::draw() {
   make_fit(win_title, 0);
 
   wmove(win, 0, 1);
-  wattron(win, A_REVERSE);
+  if (active)
+    wattron(win, A_REVERSE);
   waddstr(win, win_title.c_str());
-  wattroff(win, A_REVERSE);
+  if (active)
+    wattroff(win, A_REVERSE);
 }
 
 int Window::visible_height() {
