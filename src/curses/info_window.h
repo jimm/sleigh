@@ -11,9 +11,6 @@ public:
   ~InfoWindow();
 
   void draw();
-
-private:
-  void add_help_str(char ch, const char * const str);
 };
 
 #endif /* INFO_WINDOW_H */

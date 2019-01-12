@@ -49,3 +49,7 @@ void ListWindow::page_down() {
   if (offset < 1000 - vis_height)
     offset += vis_height;
 }
+
+void ListWindow::jump_to(int n) {
+  offset = n;
+}

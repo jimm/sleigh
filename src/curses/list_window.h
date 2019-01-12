@@ -16,6 +16,7 @@ public:
 
   void page_up();
   void page_down();
+  void jump_to(int n);
 
   int index_at(int row, int col) { return row + offset - 1; }
 

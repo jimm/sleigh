@@ -56,7 +56,8 @@ private:
   void copy_within_synth();
   void move_within_synth();
   void transmit_selected();
-  void goto_program();
+  void send_program_change();
+  void jump_in_window();
   void handle_mouse(MEVENT *event);
   void page_up();
   void page_down();

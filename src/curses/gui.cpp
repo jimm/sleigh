@@ -62,9 +62,10 @@ void GUI::event_loop() {
       move_within_synth();
       break;
     case 'p':
-      goto_program();
+      send_program_change();
       break;
-    case 'r':
+    case 'j':
+      jump_in_window();
       break;
     case 'q':
       done = TRUE;
@@ -86,6 +87,8 @@ void GUI::event_loop() {
       break;
     case KEY_RESIZE:
       resize_windows();
+      break;
+    case 'r':
       break;
     default:
       needs_refresh = false;
@@ -256,8 +259,8 @@ void GUI::transmit_selected() {
   editor->transmit_selected();
 }
 
-void GUI::goto_program() {
-  prompt = new PromptWindow("Go To Program");
+void GUI::send_program_change() {
+  prompt = new PromptWindow("Send Program Change");
   string prog_num_str = prompt->gets();
   delete prompt;
   prompt = 0;
@@ -272,6 +275,19 @@ void GUI::goto_program() {
     ostr << "error sending program change: " << status;
     show_message(ostr.str());
   }
+}
+
+void GUI::jump_in_window() {
+  prompt = new PromptWindow("Jump To");
+  string num_str = prompt->gets();
+  delete prompt;
+  prompt = 0;
+
+  int num = atoi(num_str.c_str()) - 1;
+  if (num < 0 || num > 1000)
+    return;
+
+  active_window->jump_to(num);
 }
 
 void GUI::handle_mouse(MEVENT *event) {
