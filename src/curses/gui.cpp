@@ -33,12 +33,14 @@ void GUI::run() {
 }
 
 void GUI::event_loop() {
-  bool done = FALSE;
+  bool done = FALSE, needs_refresh = true;
   int ch, prev_cmd = 0;
   MEVENT event;
 
   while (!done) {
-    refresh_all();
+    if (needs_refresh)
+      refresh_all();
+    needs_refresh = true;
     ch = getch();
     switch (ch) {
     case 'l':
@@ -85,10 +87,9 @@ void GUI::event_loop() {
     case KEY_RESIZE:
       resize_windows();
       break;
-    default:                    // DEBUG
-      char buf[256];
-      sprintf(buf, "key %d %o\n", ch, ch);
-      show_message(buf);
+    default:
+      needs_refresh = false;
+      break;
     }
     prev_cmd = ch;
   }
@@ -316,14 +317,12 @@ bool GUI::mouse_click_too_soon() {
 void GUI::page_up() {
   if (active_window == 0)
     return;
-  show_message("page up");       // DEBUG
   active_window->page_up();
 }
 
 void GUI::page_down() {
   if (active_window == 0)
     return;
-  show_message("page down");     // DEBUG
   active_window->page_down();
 }
 
