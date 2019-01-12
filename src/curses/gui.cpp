@@ -15,9 +15,8 @@
 #define RIGHT_WINDOW 1
 
 GUI::GUI(Editor *e)
-  : editor(e), active_window(0), clear_msg_id(0)
+  : editor(e), active_window(0), clear_msg_id(0), last_mouse_click_msecs(0)
 {
-  clock_gettime(CLOCK_REALTIME, &last_mouse_click_time);
 }
 
 GUI::~GUI() {
@@ -275,21 +274,8 @@ void GUI::goto_program() {
 }
 
 void GUI::handle_mouse(MEVENT *event) {
-  // Don't do anything if previous click was within DEBOUNCE_MSECS milliseconds.
-  timespec now;
-  long then_msecs, now_msecs, diff_msecs;
-  clock_gettime(CLOCK_REALTIME, &now);
-  then_msecs = last_mouse_click_time.tv_sec * 1000L +
-    (last_mouse_click_time.tv_nsec/1000000L);
-  now_msecs = now.tv_sec * 1000L + (now.tv_nsec/1000000L);
-  diff_msecs = now_msecs - then_msecs;
-
-  clock_gettime(CLOCK_REALTIME, &last_mouse_click_time);
-
-  if (diff_msecs < DEBOUNCE_MSECS) {
-    clock_gettime(CLOCK_REALTIME, &last_mouse_click_time);
+  if (mouse_click_too_soon())
     return;
-  }
 
   rect left_rect = geom_file_rect();
   rect right_rect = geom_synth_rect();
@@ -308,6 +294,23 @@ void GUI::handle_mouse(MEVENT *event) {
     editor->select(EDITOR_SLEDGE, index_at_mouse, shifted);
     active_window = synth_list;
   }
+}
+
+bool GUI::mouse_click_too_soon() {
+  long now_msecs;
+#ifdef CLOCK_REALTIME
+  timespec now;
+  clock_gettime(CLOCK_REALTIME, &now);
+  now_msecs = now.tv_sec * 1000L + (now.tv_nsec/1000000L);
+#else
+  timeval now;
+  gettimeofday(&now, 0);
+  now_msecs = now.tv_sec * 1000L + (now.tv_usec/1000L);
+#endif
+
+  long diff_msecs = now_msecs - last_mouse_click_msecs;
+  last_mouse_click_msecs = now_msecs;
+  return diff_msecs < DEBOUNCE_MSECS;
 }
 
 void GUI::page_up() {

@@ -37,7 +37,7 @@ private:
   int clear_msg_secs;
   int clear_msg_id;
   mmask_t old_mouse_mask;
-  timespec last_mouse_click_time;
+  long last_mouse_click_msecs;
 
   void event_loop();
   void config_curses();
@@ -60,6 +60,7 @@ private:
   void handle_mouse(MEVENT *event);
   void page_up();
   void page_down();
+  bool mouse_click_too_soon();
   void show_message(string);
   void clear_message_after(int);
 };
