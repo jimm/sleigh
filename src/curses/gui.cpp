@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <unistd.h>
+#ifndef CLOCK_REALTIME
+#include <sys/time.h>
+#endif
 #include "../consts.h"
 #include "../utils.h"
 #include "gui.h"
