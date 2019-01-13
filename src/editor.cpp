@@ -41,7 +41,7 @@ int Editor::load(const char * const path) {
     return errno;
   }
   while (fread(&prog, SLEDGE_PROGRAM_SYSEX_LEN, 1, fp) == 1) {
-    int prog_num = prog.prog_high * 0x80 + prog.prog_low;
+    int prog_num = prog.program_number();
     memcpy((void *)&pstate[EDITOR_FILE].programs[prog_num], &prog, SLEDGE_PROGRAM_SYSEX_LEN);
     pstate[EDITOR_FILE].programs[prog_num].update();
   }
@@ -90,10 +90,9 @@ void Editor::copy_or_move(int from_type, int to_type, int prog_num, bool init_sr
       SledgeProgram *dest = &pstate[to_type].programs[prog_num];
 
       memcpy((void *)dest, (void *)src, SLEDGE_PROGRAM_SYSEX_LEN);
-      dest->prog_high = (prog_num & 0x3f8) >> 7;
-      dest->prog_low = prog_num & 0x3f;
+      dest->set_program_number(prog_num);
       if (init_src) {
-        memcpy((void *)src, (void *)&init_program, SLEDGE_PROGRAM_SYSEX_LEN);
+        memcpy((void *)src, (void *)&sledge_init_program, SLEDGE_PROGRAM_SYSEX_LEN);
         src->update();
       }
       dest->update();

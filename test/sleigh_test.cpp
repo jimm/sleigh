@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/resource.h>
 #include "sleigh_test.h"
+#include "sledge_program_test.h"
 
 // ================ running tests ================
 
@@ -41,7 +42,7 @@ void print_results() {
 }
 
 void run_tests() {
-  // TODO
+  test_sledge_program();
 }
 
 void run_tests_and_print_results() {

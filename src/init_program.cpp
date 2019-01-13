@@ -4,7 +4,7 @@
 #include "sledge_program.h"
 
 // MUST initialize this by calling init_init_program.
-SledgeProgram init_program;
+SledgeProgram sledge_init_program;
 
 static byte ip_header[3] = {0x15, 0x00, 0x10};
 static byte data[] = {
@@ -53,18 +53,21 @@ static byte data[] = {
 static byte data2[] = {0x00, 0x00, 0x00, 0x52};
 
 void init_init_program() {
-  init_program.sysex = SYSEX;
-  init_program.waldorf = WALDORF_MANUFACTURER_ID;
-  memcpy(&init_program.header, ip_header, sizeof(ip_header));
-  init_program.prog_high = 0;
-  init_program.prog_low = 0;
-  memcpy(&init_program.data, data, sizeof(data));
-  memset(&init_program.sixteen_fours, 0x04, sizeof(init_program.sixteen_fours));
-  memset(&init_program.seventeen_forty_fours, 0x44,
-         sizeof(init_program.seventeen_forty_fours));
-  memset(&init_program.three_zeroes, 0, sizeof(init_program.three_zeroes));
-  strncpy((char *)&init_program.name, "Init            ", 16);
-  init_program.category = SLEDGE_CATEGORY_INIT;
-  memcpy(&init_program.data2, &data2, sizeof(data2));
-  init_program.eox = EOX;
+  init_program(&sledge_init_program);
+}
+
+void init_program(SledgeProgram *sp) {
+  sp->sysex = SYSEX;
+  sp->waldorf = WALDORF_MANUFACTURER_ID;
+  memcpy(&sp->header, ip_header, sizeof(ip_header));
+  sp->set_program_number(0);
+  memcpy(&sp->data, data, sizeof(data));
+  memset(&sp->sixteen_fours, 0x04, sizeof(sp->sixteen_fours));
+  memset(&sp->seventeen_forty_fours, 0x44,
+         sizeof(sp->seventeen_forty_fours));
+  memset(&sp->three_zeroes, 0, sizeof(sp->three_zeroes));
+  strncpy((char *)&sp->name, "Init            ", 16);
+  sp->category = SLEDGE_CATEGORY_INIT;
+  memcpy(&sp->data2, &data2, sizeof(data2));
+  sp->eox = EOX;
 }

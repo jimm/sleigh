@@ -10,7 +10,9 @@ const char * const SLEDGE_CATEGORY_NAMES[] = {
 
 void SledgeProgram::update() {
   memcpy(name_string, name, SLEDGE_NAME_LEN);
+  name_string[SLEDGE_NAME_LEN] = 0;
   for (char *p = &name_string[SLEDGE_NAME_LEN-1]; p >= name_string && *p == ' '; --p)
     *p = 0;
   strncpy(category_string, SLEDGE_CATEGORY_NAMES[category], 5);
+  category_string[4] = 0;
 }

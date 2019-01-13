@@ -44,6 +44,9 @@ public:
   const char * const name_str() { return name_string; }
   const char * const category_str() { return category_string; }
 
+  void set_program_number(int n) { prog_high = (n & 0x3f80) >> 7; prog_low = n & 0x7f; }
+  int program_number() { return (prog_high << 7) + prog_low; }
+
 private:
   char name_string[SLEDGE_NAME_LEN + 1];
   char category_string[5];
