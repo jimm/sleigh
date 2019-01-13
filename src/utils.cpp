@@ -50,3 +50,10 @@ void debug_timestamp() {
   strftime(tstamp, 32, "%Y-%m-%d %H:%M:%S", localtime(&t));
   fprintf(debug_fp, "[%s] ", tstamp);
 }
+
+void debug_dump_hex(byte *bytes, size_t size, const char * const msg) {
+  FILE *orig_stdout = stdout;
+  stdout = debug_fp;
+  dump_hex(bytes, size, msg);
+  stdout = orig_stdout;
+}

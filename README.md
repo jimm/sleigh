@@ -102,3 +102,9 @@ dumps.
 * **r** - Refresh the screen.
 
 * **q** - Quit.
+
+# To Do
+
+- fix active win after file load
+- when update after prog comes from Sledge, message "received XXX"
+- when transmit, message "transmitted XXX"

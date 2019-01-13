@@ -14,6 +14,7 @@ void dump_hex(byte *bytes, size_t size, const char * const msg);
 void init_debug(bool debug);
 void cleanup_debug();
 void debug_timestamp();
+void debug_dump_hex(byte *bytes, size_t size, const char * const msg);
 
 #define debug(fmt, ...) { \
     debug_timestamp(); \
