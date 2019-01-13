@@ -34,7 +34,7 @@ public:
   int load(const char * const path); // returns 0 if OK, else error_message set
   int save(const char * const path); // ditto
 
-  void file_to_synth(int prog_num);
+  void copy_file_to_synth(int prog_num);
   void copy_within_synth(int prog_num);
   void move_within_synth(int prog_num);
   void transmit_selected();

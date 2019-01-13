@@ -1,3 +1,8 @@
+/*
+ * Manages Sledge program loading from files, saving to files,
+ * copying/moving programs around, and transmitting programs to the Sledge.
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
@@ -25,6 +30,7 @@ void Editor::update(Observable *_o) {
   pstate[EDITOR_SLEDGE].curr = sledge->last_received_program();
 }
 
+// Loads into EDITOR_FILE programs.
 int Editor::load(const char * const path) {
   SledgeProgram prog;
 
@@ -47,6 +53,7 @@ int Editor::load(const char * const path) {
   return 0;
 }
 
+// Saves EDITOR_SLEDGE programs into a file.
 int Editor::save(const char * const path) {
   FILE *fp = fopen(path, "w");
 
@@ -63,7 +70,7 @@ int Editor::save(const char * const path) {
   return 0;
 }
 
-void Editor::file_to_synth(int prog_num) {
+void Editor::copy_file_to_synth(int prog_num) {
   copy_or_move(EDITOR_FILE, EDITOR_SLEDGE, prog_num, false);
 }
 
@@ -130,14 +137,21 @@ void Editor::select(int which, int index, bool shifted) {
     }
   }
 
+  // curr is in range of already-selected items; toggle it.
   if (state->curr >= curr_min && state->curr <= curr_max) {
     toggle(state->selected[state->curr]);
+    return;
   }
-  else if (state->curr < curr_min) {
+
+  // curr is less than current min, extend range down.
+  if (state->curr < curr_min) {
     for (int i = state->curr; i < curr_min; ++i)
       state->selected[i] = true;
+    return;
   }
-  else if (state->curr > curr_max) {
+
+  // curr is greater than current min, extend range up.
+  if (state->curr > curr_max) {
     for (int i = curr_max + 1; i <= state->curr; ++i)
       state->selected[i] = true;
   }

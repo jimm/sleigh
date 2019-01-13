@@ -53,7 +53,7 @@ void GUI::event_loop() {
       transmit_selected();
       break;
     case '>':
-      file_to_synth();
+      copy_file_to_synth();
       break;
     case 'c':
       copy_within_synth();
@@ -200,7 +200,7 @@ void GUI::load() {
 }
 
 void GUI::save() {
-  prompt = new PromptWindow("Save File");
+  prompt = new PromptWindow("Save Synth to File");
   string path = prompt->gets();
   delete prompt;
   prompt = 0;
@@ -219,7 +219,7 @@ void GUI::save() {
     show_message(editor->error_message);
 }
 
-void GUI::file_to_synth() {
+void GUI::copy_file_to_synth() {
   prompt = new PromptWindow("Copy From File to Synth, Starting at Program Number");
   string prog_num_str = prompt->gets();
   delete prompt;
@@ -228,7 +228,7 @@ void GUI::file_to_synth() {
   int prog_num = atoi(prog_num_str.c_str()) - 1;
   if (prog_num < 0 || prog_num > 998)
     return;
-  editor->file_to_synth(prog_num);
+  editor->copy_file_to_synth(prog_num);
 }
 
 void GUI::copy_within_synth() {

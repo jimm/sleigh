@@ -52,7 +52,7 @@ private:
   void load();
   void save();
   void transmit();
-  void file_to_synth();
+  void copy_file_to_synth();
   void copy_within_synth();
   void move_within_synth();
   void transmit_selected();
