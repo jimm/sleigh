@@ -14,7 +14,7 @@ public:
   int curr;
 };
 
-class Editor : public Observer {
+class Editor : public Observer, public Observable {
 public:
   Sledge *sledge;
   SledgeProgram programs[1000];
@@ -30,6 +30,7 @@ public:
   SledgeProgram * programs_for_type(int type) { return pstate[type].programs; }
   int curr_index_for_type(int type) { return pstate[type].curr; }
   bool is_selected(int type, int i) { return pstate[type].selected[i]; }
+  int last_transmitted_program() { return last_transmitted_prog; }
 
   int load(const char * const path); // returns 0 if OK, else error_message set
   int save(const char * const path); // ditto
@@ -45,6 +46,8 @@ public:
   void select(int which, int index, bool shifted);
 
 private:
+  int last_transmitted_prog;
+
   const char * expand_and_save_path(char *path);
   void copy_or_move(int from_type, int to_type, int prog_num, bool init_src);
 };

@@ -104,9 +104,13 @@ void Editor::copy_or_move(int from_type, int to_type, int prog_num, bool init_sr
 
 void Editor::transmit_selected() {
   for (int i = 0; i < 1000; ++i)
-    if (pstate[EDITOR_SLEDGE].selected[i])
+    if (pstate[EDITOR_SLEDGE].selected[i]) {
+      usleep(10);
       sledge->send_sysex((const byte *)&pstate[EDITOR_SLEDGE].programs[i],
                          SLEDGE_PROGRAM_SYSEX_LEN);
+      last_transmitted_prog = i;
+      changed();
+    }
 }
 
 void Editor::select(int which, int index, bool shifted) {

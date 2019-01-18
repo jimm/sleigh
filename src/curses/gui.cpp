@@ -102,14 +102,26 @@ void GUI::event_loop() {
 }
 
 void GUI::update(Observable *o) {
-  Sledge *sledge = (Sledge *)o;
-  int prog_num = sledge->last_received_program();
-
   synth_list->draw();
   wnoutrefresh(synth_list->win);
 
   if (prompt)
     wnoutrefresh(prompt->win);
+
+  Sledge *s = dynamic_cast<Sledge *>(o);
+  int prog_num;
+  string msg;
+  if (s) {
+    prog_num = s->last_received_program();
+    msg += "recieved program from sledge: ";
+  }
+  Editor *ed = dynamic_cast<Editor *>(o);
+  if (ed) {
+    prog_num = ed->last_transmitted_program();
+    msg += "transmitted program to sledge: ";
+  }
+  msg += to_string(prog_num + 1); // start at 1
+  show_message(msg);
 
   doupdate();
 }

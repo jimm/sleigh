@@ -156,13 +156,14 @@ void Sleigh::initialize(struct opts *opts) {
 
 void Sleigh::run() {
   debug("Sleigh::run\n");
-  Editor e(sledge, getenv("SLEIGH_SYSEX_DIR"));
-  GUI gui(&e);
+  Editor editor(sledge, getenv("SLEIGH_SYSEX_DIR"));
+  GUI gui(&editor);
   // The editor must be added as an observer before the GUI is, so that
   // programs received from the Sledge update the editor's current index
   // before the GUI is redrawn.
-  sledge->add_observer(&e);
+  sledge->add_observer(&editor);
   sledge->add_observer(&gui);
+  editor.add_observer(&gui);
   gui.run();
   sledge->remove_observer(&gui);
 }
