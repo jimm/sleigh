@@ -1,6 +1,7 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
+#include <string>
 #include "sledge.h"
 #include "sledge_program.h"
 
@@ -21,7 +22,7 @@ public:
   ProgramState pstate[2];
   char recent_file_path[1024];
   char error_message[1024];
-  const char * const default_sysex_dir;
+  string default_sysex_dir;
 
   Editor(Sledge *s, const char * const default_sysex_dir);
 

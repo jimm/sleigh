@@ -64,6 +64,7 @@ private:
   bool mouse_click_too_soon();
   void show_message(string);
   void clear_message_after(int);
+  string tildize(string dir);
 };
 
 #endif /* GUI_H */

@@ -24,6 +24,8 @@ Editor::Editor(Sledge *s, const char * const sysex_dir)
       pstate[i].selected[j] = false;
     }
   }
+  if (sysex_dir)
+    default_sysex_dir = sysex_dir;
 }
 
 void Editor::update(Observable *_o) {
@@ -162,8 +164,8 @@ void Editor::select(int which, int index, bool shifted) {
 
 // Expands tilde or env var at beginning of path and writes expanded path
 // into recent_file_path. If path does not start with '~' or '$' and if
-// default_sysex_dir is not 0, then prepends default_sysex_dir. Returns
-// recent_file_path.
+// default_sysex_dir is not empty, then prepends default_sysex_dir. Saves
+// final directdory to default_sysex_dir. Returns recent_file_path.
 const char * Editor::expand_and_save_path(char *path) {
   char *p = recent_file_path;
   if (path[0] == '~') {
@@ -192,15 +194,18 @@ const char * Editor::expand_and_save_path(char *path) {
     p += strlen(recent_file_path);
     path = env_p;
   }
- else if (*path != '/' && default_sysex_dir != 0) {
+ else if (*path != '/' && default_sysex_dir != "") {
    // Prepend default_sysex_dir if defined
-    strncpy(recent_file_path, default_sysex_dir, 1024);
+   strncpy(recent_file_path, default_sysex_dir.c_str(), 1024);
     if (recent_file_path[strlen(recent_file_path)-1] != '/')
       strncat(recent_file_path, "/", 1024);
     p += strlen(recent_file_path);
   }
 
   strcpy(p, path);
+
+  // Copy final directory to default_sysex_dir
+  default_sysex_dir = dirname(recent_file_path);
 
   return recent_file_path;
 }

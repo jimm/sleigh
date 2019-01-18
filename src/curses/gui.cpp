@@ -195,7 +195,13 @@ void GUI::close_screen() {
 }
 
 void GUI::load() {
-  prompt = new PromptWindow("Load File");
+  string title("Load File");
+  if (!editor->default_sysex_dir.empty()) {
+    title += " (default dir: ";
+    title += tildize(editor->default_sysex_dir);
+    title += ")";
+  }
+  prompt = new PromptWindow(title.c_str());
   string path = prompt->gets();
   delete prompt;
   prompt = 0;
@@ -390,4 +396,13 @@ void GUI::clear_message_after(int secs) {
 
   pthread_t pthread;
   pthread_create(&pthread, 0, clear_message_thread, this);
+}
+
+string GUI::tildize(string dir) {
+  char *home = getenv("HOME");
+
+  if (dir.find(home) != 0)
+    return dir;
+
+  return "~" + dir.substr(strlen(home), string::npos);
 }
