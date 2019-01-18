@@ -55,7 +55,7 @@ int Editor::load(const char * const path) {
 
 // Saves EDITOR_SLEDGE programs into a file.
 int Editor::save(const char * const path) {
-  FILE *fp = fopen(path, "w");
+  FILE *fp = fopen(expand_and_save_path((char *)path), "w");
 
   if (fp == 0) {
     sprintf(error_message, "error opening %s for write: %s", path, strerror(errno));
@@ -161,17 +161,17 @@ void Editor::select(int which, int index, bool shifted) {
 }
 
 // Expands tilde or env var at beginning of path and writes expanded path
-// into loaded_file_path. If path does not start with '~' or '$' and if
+// into recent_file_path. If path does not start with '~' or '$' and if
 // default_sysex_dir is not 0, then prepends default_sysex_dir. Returns
-// loaded_file_path.
+// recent_file_path.
 const char * Editor::expand_and_save_path(char *path) {
-  char *p = loaded_file_path;
+  char *p = recent_file_path;
   if (path[0] == '~') {
     // Expand tilde
     char *home = getenv("HOME");
     if (path[1] == '/') {
-      sprintf(loaded_file_path, "%s", home);
-      p += strlen(loaded_file_path);
+      sprintf(recent_file_path, "%s", home);
+      p += strlen(recent_file_path);
       ++path;
     }
     else {
@@ -188,19 +188,19 @@ const char * Editor::expand_and_save_path(char *path) {
     for (n = env_name, env_p = path+1; *env_p && *env_p != '/'; ++n, ++env_p)
       *n = *env_p;
     *n = 0;
-    sprintf(loaded_file_path, "%s", getenv(env_name));
-    p += strlen(loaded_file_path);
+    sprintf(recent_file_path, "%s", getenv(env_name));
+    p += strlen(recent_file_path);
     path = env_p;
   }
  else if (*path != '/' && default_sysex_dir != 0) {
    // Prepend default_sysex_dir if defined
-    strncpy(loaded_file_path, default_sysex_dir, 1024);
-    if (loaded_file_path[strlen(loaded_file_path)-1] != '/')
-      strncat(loaded_file_path, "/", 1024);
-    p += strlen(loaded_file_path);
+    strncpy(recent_file_path, default_sysex_dir, 1024);
+    if (recent_file_path[strlen(recent_file_path)-1] != '/')
+      strncat(recent_file_path, "/", 1024);
+    p += strlen(recent_file_path);
   }
 
   strcpy(p, path);
 
-  return loaded_file_path;
+  return recent_file_path;
 }

@@ -19,7 +19,7 @@ public:
   Sledge *sledge;
   SledgeProgram programs[1000];
   ProgramState pstate[2];
-  char loaded_file_path[1024];
+  char recent_file_path[1024];
   char error_message[1024];
   const char * const default_sysex_dir;
 
