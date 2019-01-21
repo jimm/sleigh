@@ -1,12 +1,19 @@
 # Sleigh
 
-Sleigh is a Studiologic Sledge program organizer for MacOS. It's similar to
-the Sledge Sound Mapper application that Studiologic provides, but I've had
-problems getting that one to receive programs from the Sledge.
+Sleigh is a [Studiologic
+Sledge](https://www.studiologic-music.com/products/sledge2/) program
+organizer for MacOS. It's similar to the Sledge Sound Mapper application
+that Studiologic provides, but I've had problems getting that one to receive
+programs from the Sledge. Sleigh is not a fancy GUI program. It runs in your
+terminal.
 
 Sleigh ONLY works on MacOS. (Tech note: I could modify Sleigh to use the
-cross-platform PortMidi library, but it has problems with large sysex
-dumps.)
+cross-platform PortMidi library, but I've had buffer overrun problems with
+large sysex dumps.)
+
+One more caveat: Sleigh is run within a terminal.
+
+# Screen Shots
 
 # Installing
 
