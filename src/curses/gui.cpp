@@ -113,14 +113,20 @@ void GUI::update(Observable *o) {
   string msg;
   if (s) {
     prog_num = s->last_received_program();
-    msg += "recieved program from sledge: ";
+    msg = "recieved program from sledge: ";
   }
+
   Editor *ed = dynamic_cast<Editor *>(o);
   if (ed) {
     prog_num = ed->last_transmitted_program();
-    msg += "transmitted program to sledge: ";
+    if (prog_num == -1)
+      msg = "done transmitting programs to sledge";
+    else
+      msg = "transmitted program to sledge: ";
   }
-  msg += to_string(prog_num + 1); // start at 1
+
+  if (prog_num != EDITOR_TRANSMIT_DONE)
+    msg += to_string(prog_num + 1); // start at 1
   show_message(msg);
 
   doupdate();

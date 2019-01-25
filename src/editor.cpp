@@ -113,6 +113,8 @@ void Editor::transmit_selected() {
       last_transmitted_prog = i;
       changed();
     }
+  last_transmitted_prog = EDITOR_TRANSMIT_DONE;
+  changed();
 }
 
 void Editor::select(int which, int index, bool shifted) {
