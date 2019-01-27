@@ -9,9 +9,8 @@ using namespace std;
 
 class ListWindow : public Window {
 public:
-  ListWindow(struct rect, const char *);
+  ListWindow(struct rect, const char *, ProgramState &program_state);
 
-  void set_contents(Editor *editor, int editor_type);
   void draw();
 
   void page_up();
@@ -21,8 +20,7 @@ public:
   int index_at(int row, int col) { return row + offset - 1; }
 
 private:
-  Editor *editor;
-  int editor_type;
+  ProgramState &program_state;
   int offset;
 
   char * prog_num_str(int i);

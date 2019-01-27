@@ -11,16 +11,20 @@
 
 class ProgramState {
 public:
-  SledgeProgram *programs;
+  Sledge *sledge;
   bool selected[1000];
   int curr;
+
+  ProgramState(Sledge *s);
+
+  SledgeProgram *programs() { return sledge->programs; }
+  bool is_selected(int i) { return selected[i]; }
 };
 
 class Editor : public Observer, public Observable {
 public:
-  Sledge *sledge;
-  SledgeProgram programs[1000];
-  ProgramState pstate[2];
+  ProgramState synth;
+  ProgramState from_file;
   char recent_file_path[1024];
   char error_message[1024];
   string default_sysex_dir;
@@ -29,9 +33,6 @@ public:
 
   virtual void update(Observable *o);
 
-  SledgeProgram * programs_for_type(int type) { return pstate[type].programs; }
-  int curr_index_for_type(int type) { return pstate[type].curr; }
-  bool is_selected(int type, int i) { return pstate[type].selected[i]; }
   // Returns -1 if all done sending
   int last_transmitted_program() { return last_transmitted_prog; }
 
@@ -43,7 +44,7 @@ public:
   void move_within_synth(int prog_num);
   void transmit_selected();
   OSStatus send_program_change(int prog_num) {
-    return sledge->program_change(prog_num);
+    return synth.sledge->program_change(prog_num);
   }
 
   void select(int which, int index, bool shifted);
@@ -52,7 +53,8 @@ private:
   int last_transmitted_prog;
 
   const char * expand_and_save_path(char *path);
-  void copy_or_move(int from_type, int to_type, int prog_num, bool init_src);
+  void copy_or_move(ProgramState &from, ProgramState &to,
+                    int prog_num, bool init_src);
 };
 
 #endif /* EDITOR_H */

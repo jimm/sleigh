@@ -1,6 +1,10 @@
 #ifndef SLEDGE_PROGRAM_H
 #define SLEDGE_PROGRAM_H
 
+// SLEDGE_UNINITIALIZED in program.sysex means it's not yet been read from a
+// file or from the Sledge.
+#define SLEDGE_UNINITIALIZED 0
+
 #define SLEDGE_PROGRAM_SYSEX_LEN 0x188
 #define SLEDGE_NAME_LEN 16
 #define SLEDGE_MIDDLE_DATA_LEN \

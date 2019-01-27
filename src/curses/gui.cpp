@@ -143,8 +143,9 @@ void GUI::config_curses() {
 }
 
 void GUI::create_windows() {
-  file_list = new ListWindow(geom_file_rect(), "Loaded File");
-  synth_list = new ListWindow(geom_synth_rect(), "Sledge Programs / Save to File");
+  file_list = new ListWindow(geom_file_rect(), "Loaded File", editor->from_file);
+  synth_list = new ListWindow(geom_synth_rect(), "Sledge Programs / Save to File",
+                              editor->synth);
   active_window = file_list;
   active_window->set_active(true);
   info = new InfoWindow(geom_info_rect(), "");
@@ -183,8 +184,6 @@ void GUI::refresh_all() {
 }
 
 void GUI::set_window_data() {
-  file_list->set_contents(editor, EDITOR_FILE);
-  synth_list->set_contents(editor, EDITOR_SLEDGE);
 }
 
 void GUI::close_screen() {
