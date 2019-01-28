@@ -31,7 +31,7 @@ void Editor::update(Observable *_o) {
   synth.curr = synth.sledge->last_received_program();
 }
 
-// Loads into EDITOR_FILE programs.
+// Loads into `from_file`.
 int Editor::load(const char * const path) {
   SledgeProgram prog;
 
@@ -54,7 +54,7 @@ int Editor::load(const char * const path) {
   return 0;
 }
 
-// Saves EDITOR_SLEDGE programs into a file.
+// Saves `synth` programs into a file.
 int Editor::save(const char * const path) {
   FILE *fp = fopen(expand_and_save_path((char *)path), "w");
 
