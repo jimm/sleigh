@@ -1,3 +1,4 @@
+#include <vector>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/resource.h>
@@ -6,7 +7,10 @@
 
 // ================ running tests ================
 
+using namespace std;
+
 test_results results;
+vector<void (*)()> test_funcs;
 
 void test_results_init() {
   results.num_tests = results.num_errors = 0;
@@ -42,7 +46,18 @@ void print_results() {
 }
 
 void run_tests() {
-  test_sledge_program();
+  vector<void (*)()>::iterator i;
+
+  printf("length of test_funcs = %ld\n", test_funcs.size());
+  for (i = test_funcs.begin(); i != test_funcs.end(); ++i) {
+    printf("running test %p\n", *i);
+    (*i)();
+  }
+}
+
+void register_test(void (*test_func)()) {
+  printf("adding test func %p\n", test_func);
+  test_funcs.push_back(test_func);
 }
 
 void run_tests_and_print_results() {
@@ -54,6 +69,7 @@ void run_tests_and_print_results() {
 // ================ main ================
 
 int main(int argc, const char **argv) {
+  register_test(test_sledge_program);
   run_tests_and_print_results();
   exit(results.num_errors == 0 ? 0 : 1);
   return 0;
