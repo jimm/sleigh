@@ -9,6 +9,7 @@
 #include "../utils.h"
 #include "gui.h"
 #include "geometry.h"
+#include "help_window.h"
 #include "info_window.h"
 #include "list_window.h"
 #include "prompt_window.h"
@@ -92,6 +93,9 @@ void GUI::event_loop() {
       resize_windows();
       break;
     case 'r':
+      break;
+    case 'h': case '?':
+      help();
       break;
     default:
       needs_refresh = false;
@@ -366,6 +370,15 @@ void GUI::page_down() {
   if (active_window == 0)
     return;
   active_window->page_down();
+}
+
+void GUI::help() {
+  rect r = geom_help_rect();
+  HelpWindow hw(r, "Help");
+  hw.draw();
+  wnoutrefresh(hw.win);
+  doupdate();
+  getch();                      /* wait for key and eat it */
 }
 
 void GUI::show_message(string msg) {

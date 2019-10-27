@@ -48,15 +48,11 @@ void print_results() {
 void run_tests() {
   vector<void (*)()>::iterator i;
 
-  printf("length of test_funcs = %ld\n", test_funcs.size());
-  for (i = test_funcs.begin(); i != test_funcs.end(); ++i) {
-    printf("running test %p\n", *i);
+  for (i = test_funcs.begin(); i != test_funcs.end(); ++i)
     (*i)();
-  }
 }
 
 void register_test(void (*test_func)()) {
-  printf("adding test func %p\n", test_func);
   test_funcs.push_back(test_func);
 }
 
