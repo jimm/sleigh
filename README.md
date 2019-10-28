@@ -113,3 +113,5 @@ dumps.
 # To Do
 
 - fix active win after file load
+- search by name
+- filter by category
