@@ -177,6 +177,7 @@ void Sleigh::usage(const char *prog_name) {
   puts("    -o or --output N    Output number");
   puts("    -c or --channel N   Sledge MIDI channel (1-16)");
   puts("    -n or --no-midi     No MIDI (ignores bad/unknown MIDI ports)");
+  puts("    -d or --debug       Debug");
   puts("    -h or --help        This help");
 }
 
