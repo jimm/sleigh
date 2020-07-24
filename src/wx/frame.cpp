@@ -47,7 +47,7 @@ Frame::Frame(const wxString& title, Sleigh &sleigh_ref)
   make_frame_panels();
   make_menu_bar();
   CreateStatusBar();
-  show_user_message("No KeyMaster file loaded", 15);
+  show_user_message("No Sledge file loaded", 15);
 }
 
 void Frame::make_frame_panels() {
@@ -130,11 +130,11 @@ void Frame::clear_user_message_after(int secs) {
 // ================ standard menu items ================
 
 void Frame::OnAbout(wxCommandEvent &_event) {
-  wxMessageBox("KeyMaster, the MIDI processing and patching system.\n"
+  wxMessageBox("Sleigh, the Studologic Sledge patch organizer.\n"
                "v1.0.0\n"
                "Jim Menard, jim@jimmenard.com\n"
-               "https://github.com/jimm/keymaster/wiki",
-               "About KeyMaster", wxOK | wxICON_INFORMATION);
+               "https://github.com/jimm/sledge/wiki",
+               "About Sleigh", wxOK | wxICON_INFORMATION);
 }
 
 void Frame::OnNew(wxCommandEvent &_event) {
@@ -143,9 +143,9 @@ void Frame::OnNew(wxCommandEvent &_event) {
 void Frame::OnOpen(wxCommandEvent &_event) {
   wxFileName fname(file_path);
 
-  wxFileDialog openFileDialog(this, "Open KeyMaster file",
+  wxFileDialog openFileDialog(this, "Open Sledge system exclusive file",
                               fname.GetPath(), fname.GetFullName(),
-                              "KeyMaster files (*.km)|*.km",
+                              "Sledge sysex files|*",
                               wxFD_OPEN|wxFD_FILE_MUST_EXIST);
   if (openFileDialog.ShowModal() != wxID_CANCEL) {
     file_path = openFileDialog.GetPath();
@@ -210,6 +210,7 @@ void Frame::update() {
 
 void Frame::update_menu_items() {
   // file menu
+  menu_bar->FindItem(wxID_NEW, nullptr)->Enable(false);
   menu_bar->FindItem(wxID_SAVEAS, nullptr)->Enable(!file_path.empty());
 
   // sledge menu

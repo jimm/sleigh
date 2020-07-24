@@ -5,6 +5,11 @@
 
 static const wxCmdLineEntryDesc g_cmdLineDesc [] = {
   { wxCMD_LINE_SWITCH, "l", "list-devices", "Display MIDI Devices" },
+  { wxCMD_LINE_SWITCH, "t", "testing", "Testing mode" },
+  { wxCMD_LINE_SWITCH, "d", "debug", "Debug mode" },
+  { wxCMD_LINE_OPTION, "c", "channel", "Sledge MIDI channel (default is 1)", wxCMD_LINE_VAL_NUMBER },
+  { wxCMD_LINE_OPTION, "i", "in-device", "Input device number", wxCMD_LINE_VAL_NUMBER },
+  { wxCMD_LINE_OPTION, "o", "out-device", "Output device number", wxCMD_LINE_VAL_NUMBER },
   { wxCMD_LINE_PARAM, nullptr, nullptr, "Sledge system exclusive file", wxCMD_LINE_VAL_STRING,
     wxCMD_LINE_PARAM_OPTIONAL },
   { wxCMD_LINE_NONE }
@@ -61,7 +66,7 @@ bool App::OnCmdLineParsed(wxCmdLineParser& parser) {
   opts.testing = parser.Found("t");
   opts.debug = parser.Found("d");
   if (parser.Found("c", &long_val))
-      opts.channel = (int)long_val;
+      opts.channel = (int)long_val - 1;
   if (parser.Found("i", &long_val))
     opts.input_num = (int)long_val;
   if (parser.Found("o", &long_val))

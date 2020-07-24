@@ -6,11 +6,10 @@ WXLIBS := $(shell wx-config --libs)
 
 MACOS_VER = 10.9
 CPP = $(shell wx-config --cxx)
-CPPFLAGS += -std=c++11 -MD -MP -g $(DEBUG) $(WXFLAGS) -mmacosx-version-min=$(MACOS_VER)
+CPPFLAGS += -std=c++11 -MD -MP -g $(DEBUG) -mmacosx-version-min=$(MACOS_VER) $(WXFLAGS)
 
-
-LD = $(shell wx-config --ld)
-LIBS = -framework AudioToolbox -framework CoreMIDI -framework Foundation -lc -lc++
+LD = clang++
+LIBS =	 -framework CoreMIDI -framework Foundation -lc -lc++
 LDFLAGS += $(LIBS) $(WXLIBS)
 
 prefix = /usr/local
@@ -32,11 +31,11 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
--include $(C_SRC:%.c=%.d)
--include $(CPP_SRC:%.cpp=%.d)
+-include $(SRC:%.cpp=%.d)
+-include $(TEST_SRC:%.cpp=%.d)
 
 test: $(NAME)_test
-	./$(NAME)_test
+	./$(NAME)_test --use-colour no $(CATCH_CATEGORY)
 
 $(NAME)_test:	$(OBJS) $(TEST_OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(filter-out $(TEST_OBJ_FILTERS),$^)
