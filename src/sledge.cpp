@@ -42,9 +42,11 @@ void Sledge::receive_midi(const MIDIPacketList *packet_list) {
         append_sysex_byte(b);
         break;
       case EOX:
-        receiving_sysex = false;
-        append_sysex_byte(b);
-        sysex_received();
+        if (receiving_sysex) {
+          receiving_sysex = false;
+          append_sysex_byte(b);
+          sysex_received();
+        }
         break;
       default:
         if (receiving_sysex)
