@@ -3,7 +3,6 @@
 
 #include <pthread.h>
 #include "sledge.h"
-#include "portmidi.h"
 
 typedef unsigned char byte;
 
@@ -17,11 +16,14 @@ struct opts {
 
   opts() : list_devices(false), testing(false), debug(false),
            channel(0), input_num(0), output_num(0) {}
-} opts;
+};
+
+class Editor;
 
 class Sleigh {
 public:
-  Sledge *sledge;
+  Sledge sledge;
+  Editor *editor;
   bool running;
   MIDIClientRef my_client_ref;
   MIDIPortRef my_in_port;
@@ -34,7 +36,8 @@ public:
   void parse_command_line(int argc, char * const *argv, struct opts *opts);
   void print_sources_and_destinations();
   void initialize(struct opts *opts);
-  void run();
+  void start(struct opts *opts);
+  void stop();
 
 private:
   char * copy_cfstring(CFStringRef cf_str);
@@ -42,7 +45,6 @@ private:
   CFStringRef cstr_to_cfstring(const char *str);
   void name_of(MIDIObjectRef ref, char *buf);
 
-  void list_devices(const char *title, const PmDeviceInfo *infos[], int num_devices);
   void init_midi(struct opts *opts);
   void usage(const char *prog_name);
 };

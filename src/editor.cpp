@@ -12,23 +12,23 @@
 
 #define toggle(x) ((x) = !(x))
 
-ProgramState::ProgramState(Sledge *s) : sledge(s) {
+ProgramState::ProgramState(Sledge &s) : sledge(s) {
   curr = 0;
   for (int i = 0; i < 1000; ++i) {
-    sledge->programs[i].sysex = SLEDGE_UNINITIALIZED;
+    sledge.programs[i].sysex = SLEDGE_UNINITIALIZED;
     selected[i] = false;
   }
 }
 
-Editor::Editor(Sledge *s, const char * const sysex_dir)
-  : synth(s), from_file(new Sledge(0))
+Editor::Editor(Sledge &s, const char * const sysex_dir)
+  : synth(s), from_file(s)
 {
   if (sysex_dir)
     default_sysex_dir = sysex_dir;
 }
 
 void Editor::update(Observable *_o) {
-  synth.curr = synth.sledge->last_received_program();
+  synth.curr = synth.sledge.last_received_program();
 }
 
 // Loads into `from_file`.
@@ -43,8 +43,8 @@ int Editor::load(const char * const path) {
   }
   while (fread(&prog, SLEDGE_PROGRAM_SYSEX_LEN, 1, fp) == 1) {
     int prog_num = prog.program_number();
-    memcpy((void *)&from_file.sledge->programs[prog_num], &prog, SLEDGE_PROGRAM_SYSEX_LEN);
-    from_file.sledge->programs[prog_num].update();
+    memcpy((void *)&from_file.sledge.programs[prog_num], &prog, SLEDGE_PROGRAM_SYSEX_LEN);
+    from_file.sledge.programs[prog_num].update();
   }
   fclose(fp);
 
@@ -64,8 +64,8 @@ int Editor::save(const char * const path) {
     return errno;
   }
   for (int i = 0; i < 1000; ++i)
-    if (synth.sledge->programs[i].sysex != 0)
-      fwrite(&synth.sledge->programs[i], SLEDGE_PROGRAM_SYSEX_LEN, 1, fp);
+    if (synth.sledge.programs[i].sysex != 0)
+      fwrite(&synth.sledge.programs[i], SLEDGE_PROGRAM_SYSEX_LEN, 1, fp);
   fclose(fp);
   return 0;
 }
@@ -87,8 +87,8 @@ void Editor::copy_or_move(ProgramState &from, ProgramState &to,
 {
   for (int i = 0; i < 1000 && prog_num < 1000; ++i) {
     if (from.selected[i]) {
-      SledgeProgram *src = &from.sledge->programs[i];
-      SledgeProgram *dest = &to.sledge->programs[prog_num];
+      SledgeProgram *src = &from.sledge.programs[i];
+      SledgeProgram *dest = &to.sledge.programs[prog_num];
 
       memcpy((void *)dest, (void *)src, SLEDGE_PROGRAM_SYSEX_LEN);
       dest->set_program_number(prog_num);
@@ -100,14 +100,14 @@ void Editor::copy_or_move(ProgramState &from, ProgramState &to,
       ++prog_num;
     }
   }
-  synth.sledge->changed();
+  synth.sledge.changed();
 }
 
 void Editor::transmit_selected() {
   for (int i = 0; i < 1000; ++i)
     if (synth.selected[i]) {
       usleep(10);
-      synth.sledge->send_sysex((const byte *)&synth.sledge->programs[i],
+      synth.sledge.send_sysex((const byte *)&synth.sledge.programs[i],
                                SLEDGE_PROGRAM_SYSEX_LEN);
       last_transmitted_prog = i;
       changed();

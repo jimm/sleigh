@@ -7,12 +7,9 @@
 #include "sledge.h"
 #include "editor.h"
 #include "utils.h"
-#include "curses/gui.h"
 #include "init_program.h"
 
 #define CFSTRING_BUF_SIZE 512
-
-Sleigh sleigh;
 
 void midi_read_proc(const MIDIPacketList *pktlist, void *ref_con,
                     void *src_conn_ref_con)
@@ -20,31 +17,10 @@ void midi_read_proc(const MIDIPacketList *pktlist, void *ref_con,
   ((Sledge *)ref_con)->receive_midi(pktlist);
 }
 
-void cleanup_midi() {
-  OSStatus err;
-
-  err = MIDIPortDisconnectSource(sleigh.my_in_port, sleigh.sledge_out_end_ref);
-  if (err != 0)
-    printf("MIDIPortDisconnectSource error: %d\n", err);
-
-  err = MIDIPortDispose(sleigh.my_in_port);
-  if (err != 0)
-    printf("MIDIPortDispose error: %d\n", err);
-
-  err = MIDIPortDispose(sleigh.my_out_port);
-  if (err != 0)
-    printf("MIDIPortDispose error: %d\n", err);
-}
-
-void cleanup() {
-  cleanup_midi();
-  cleanup_debug();
-}
-
 // ****************************************************************
 
 Sleigh::~Sleigh() {
-  delete sledge;
+  delete editor;
 }
 
 // Returns a C string that is a newly allocated copy of cf_str.
@@ -107,7 +83,7 @@ void Sleigh::init_midi(struct opts *opts) {
   OSStatus err;
   CFStringRef cf_str;
 
-  sledge = new Sledge(opts->channel);
+  sledge.channel = opts->channel;
 
   cf_str = cstr_to_cfstring("Sleigh Sledge Program Mapper");
   err = MIDIClientCreate(cf_str, 0, 0, &my_client_ref);
@@ -125,7 +101,7 @@ void Sleigh::init_midi(struct opts *opts) {
 
   // My input port
   cf_str = cstr_to_cfstring("Sleigh Sledge Program Mapper Input");
-  err = MIDIInputPortCreate(my_client_ref, cf_str, midi_read_proc, sledge, &my_in_port);
+  err = MIDIInputPortCreate(my_client_ref, cf_str, midi_read_proc, &sledge, &my_in_port);
   if (err != 0)
     printf("MIDIInputPortCreate error: %d\n", err);
   CFRelease(cf_str);
@@ -143,100 +119,113 @@ void Sleigh::init_midi(struct opts *opts) {
   if (err != 0)
     printf("MIDIPortConnectSource error: %d\n", err);
 
-  sledge->set_output(my_out_port, sledge_in_end_ref);
+  sledge.set_output(my_out_port, sledge_in_end_ref);
 }
 
 void Sleigh::initialize(struct opts *opts) {
   init_debug(opts->debug);
   debug("Sleigh::initialize\n");
-  atexit(cleanup);
   init_init_program();
   init_midi(opts);
 }
 
-void Sleigh::run() {
-  debug("Sleigh::run\n");
-  Editor editor(sledge, getenv("SLEIGH_SYSEX_DIR"));
-  GUI gui(&editor);
+void Sleigh::start(struct opts *opts) {
+  initialize(opts);
+  editor = new Editor(sledge, getenv("SLEIGH_SYSEX_DIR"));
+
   // The editor must be added as an observer before the GUI is, so that
   // programs received from the Sledge update the editor's current index
   // before the GUI is redrawn.
-  sledge->add_observer(&editor);
-  sledge->add_observer(&gui);
-  editor.add_observer(&gui);
-  gui.run();
-  sledge->remove_observer(&gui);
+  // sledge.add_observer(&editor);
+  // sledge.add_observer(&gui);
+  // editor.add_observer(&gui);
 }
 
-void Sleigh::usage(const char *prog_name) {
-  printf("usage: %s\n", basename((char *)prog_name));
-  puts("[-l] [-i N] [-o N] [-n] [-h] file");
-  puts("");
-  puts("    -l or --list-ports  List all attached MIDI ports");
-  puts("    -i or --input N     Input number");
-  puts("    -o or --output N    Output number");
-  puts("    -c or --channel N   Sledge MIDI channel (1-16)");
-  puts("    -n or --no-midi     No MIDI (ignores bad/unknown MIDI ports)");
-  puts("    -d or --debug       Debug");
-  puts("    -h or --help        This help");
+void Sleigh::stop() {
+  OSStatus err = MIDIPortDisconnectSource(my_in_port, sledge_out_end_ref);
+  if (err != 0)
+    fprintf(stderr, "MIDIPortDisconnectSource error: %d\n", err);
+
+  err = MIDIPortDispose(my_in_port);
+  if (err != 0)
+    fprintf(stderr, "MIDIPortDispose error: %d\n", err);
+
+  err = MIDIPortDispose(my_out_port);
+  if (err != 0)
+    fprintf(stderr, "MIDIPortDispose error: %d\n", err);
+
+  cleanup_debug();
 }
 
-void Sleigh::parse_command_line(int argc, char * const *argv, struct opts *opts) {
-  int ch;
-  char *prog_name = argv[0];
-  static struct option longopts[] = {
-    {"list", no_argument, 0, 'l'},
-    {"channel", required_argument, 0, 'c'},
-    {"input", required_argument, 0, 'i'},
-    {"output", required_argument, 0, 'o'},
-    {"no-midi", no_argument, 0, 'n'},
-    {"debug", no_argument, 0, 'd'},
-    {"help", no_argument, 0, 'h'},
-    {0, 0, 0, 0}
-  };
+// void Sleigh::usage(const char *prog_name) {
+//   printf("usage: %s\n", basename((char *)prog_name));
+//   puts("[-l] [-i N] [-o N] [-n] [-h] file");
+//   puts("");
+//   puts("    -l or --list-ports  List all attached MIDI ports");
+//   puts("    -i or --input N     Input number");
+//   puts("    -o or --output N    Output number");
+//   puts("    -c or --channel N   Sledge MIDI channel (1-16)");
+//   puts("    -n or --no-midi     No MIDI (ignores bad/unknown MIDI ports)");
+//   puts("    -d or --debug       Debug");
+//   puts("    -h or --help        This help");
+// }
 
-  while ((ch = getopt_long(argc, argv, "lc:i:o:ndh", longopts, 0)) != -1) {
-    switch (ch) {
-    case 'l':
-      opts->list_devices = true;
-      break;
-    case 'c':
-      opts->channel = atoi(optarg) - 1;
-      break;
-    case 'i':
-      opts->input_num = atoi(optarg);
-    case 'o':
-      opts->output_num = atoi(optarg);
-      break;
-    case 'n':
-      opts->testing = true;
-      break;
-    case 'd':
-      opts->debug = true;
-      break;
-    case 'h': default:
-      usage(prog_name);
-      exit(ch == '?' || ch == 'h' ? 0 : 1);
-    }
-  }
-}
+// void Sleigh::parse_command_line(int argc, char * const *argv, struct opts *opts) {
+//   int ch;
+//   char *prog_name = argv[0];
+//   static struct option longopts[] = {
+//     {"list", no_argument, 0, 'l'},
+//     {"channel", required_argument, 0, 'c'},
+//     {"input", required_argument, 0, 'i'},
+//     {"output", required_argument, 0, 'o'},
+//     {"no-midi", no_argument, 0, 'n'},
+//     {"debug", no_argument, 0, 'd'},
+//     {"help", no_argument, 0, 'h'},
+//     {0, 0, 0, 0}
+//   };
 
-int main(int argc, char * const *argv) {
-  struct opts opts;
-  const char *prog_name = argv[0];
+//   while ((ch = getopt_long(argc, argv, "lc:i:o:ndh", longopts, 0)) != -1) {
+//     switch (ch) {
+//     case 'l':
+//       opts->list_devices = true;
+//       break;
+//     case 'c':
+//       opts->channel = atoi(optarg) - 1;
+//       break;
+//     case 'i':
+//       opts->input_num = atoi(optarg);
+//     case 'o':
+//       opts->output_num = atoi(optarg);
+//       break;
+//     case 'n':
+//       opts->testing = true;
+//       break;
+//     case 'd':
+//       opts->debug = true;
+//       break;
+//     case 'h': default:
+//       usage(prog_name);
+//       exit(ch == '?' || ch == 'h' ? 0 : 1);
+//     }
+//   }
+// }
 
-  sleigh.parse_command_line(argc, argv, &opts);
-  argc -= optind;
-  argv += optind;
+// int main(int argc, char * const *argv) {
+//   struct opts opts;
+//   const char *prog_name = argv[0];
 
-  if (opts.list_devices) {
-    sleigh.print_sources_and_destinations();
-    exit(0);
-  }
+//   sleigh.parse_command_line(argc, argv, &opts);
+//   argc -= optind;
+//   argv += optind;
 
-  sleigh.initialize(&opts);
-  sleigh.run();
+//   if (opts.list_devices) {
+//     sleigh.print_sources_and_destinations();
+//     exit(0);
+//   }
 
-  exit(0);
-  return 0;
-}
+//   sleigh.initialize(&opts);
+//   sleigh.run();
+
+//   exit(0);
+//   return 0;
+// }

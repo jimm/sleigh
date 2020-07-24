@@ -15,6 +15,7 @@ public:
   SledgeProgram programs[1000];
 
   Sledge(byte channel);         // channel 0-15
+  Sledge() : channel(0) {}
   ~Sledge();
 
   void set_output(MIDIPortRef app_output_ref, MIDIEndpointRef synth_input_ref) {

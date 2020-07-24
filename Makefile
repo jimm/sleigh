@@ -1,20 +1,27 @@
 NAME = sleigh
-DEBUG = -DDEBUG -DDEBUG_STDERR
+# DEBUG = -DDEBUG -DDEBUG_STDERR
+
+WXFLAGS := $(shell wx-config --cxxflags)
+WXLIBS := $(shell wx-config --libs)
+
 MACOS_VER = 10.9
-CPPFLAGS += -std=c++11 -mmacosx-version-min=$(MACOS_VER) -MD -g $(DEBUG)
-LIBS = -framework AudioToolbox -framework CoreMIDI -framework Foundation \
-	-lc -lc++ -lncurses
-LDFLAGS += $(LIBS) -macosx_version_min $(MACOS_VER)
+CPP = $(shell wx-config --cxx)
+CPPFLAGS += -std=c++11 -MD -MP -g $(DEBUG) $(WXFLAGS) -mmacosx-version-min=$(MACOS_VER)
+
+
+LD = $(shell wx-config --ld)
+LIBS = -framework AudioToolbox -framework CoreMIDI -framework Foundation -lc -lc++
+LDFLAGS += $(LIBS) $(WXLIBS)
 
 prefix = /usr/local
 exec_prefix = $(prefix)
 bindir = $(exec_prefix)/bin
 
-SRC = $(wildcard src/*.cpp) $(wildcard src/curses/*.cpp)
+SRC = $(wildcard src/*.cpp) $(wildcard src/wx/*.cpp)
 OBJS = $(SRC:%.cpp=%.o)
 TEST_SRC = $(wildcard test/*.cpp)
 TEST_OBJS = $(TEST_SRC:%.cpp=%.o)
-TEST_OBJ_FILTERS = src/$(NAME).o
+TEST_OBJ_FILTERS = src/wx/app_main.o
 
 CATCH_CATEGORY ?= ""
 

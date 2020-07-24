@@ -11,13 +11,13 @@
 
 class ProgramState {
 public:
-  Sledge *sledge;
+  Sledge &sledge;
   bool selected[1000];
   int curr;
 
-  ProgramState(Sledge *s);
+  ProgramState(Sledge &s);
 
-  SledgeProgram *programs() { return sledge->programs; }
+  SledgeProgram *programs() { return sledge.programs; }
   bool is_selected(int i) { return selected[i]; }
 };
 
@@ -29,7 +29,7 @@ public:
   char error_message[1024];
   string default_sysex_dir;
 
-  Editor(Sledge *s, const char * const default_sysex_dir);
+  Editor(Sledge &s, const char * const default_sysex_dir);
 
   virtual void update(Observable *o);
 
@@ -44,7 +44,7 @@ public:
   void move_within_synth(int prog_num);
   void transmit_selected();
   OSStatus send_program_change(int prog_num) {
-    return synth.sledge->program_change(prog_num);
+    return synth.sledge.program_change(prog_num);
   }
 
   void select(int which, int index, bool shifted);
