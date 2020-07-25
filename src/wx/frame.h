@@ -18,6 +18,7 @@ enum {
 };
 
 class wxTextCtrl;
+class ProgramState;
 
 class Frame: public wxFrame {
 public:
@@ -47,6 +48,8 @@ private:
   Sleigh &sleigh;
   wxString file_path;
   wxMenuBar *menu_bar;
+  wxListBox *file_programs_wxlist;
+  wxListBox *sledge_programs_wxlist;
   int clear_msg_secs;
   int clear_msg_id;
 
@@ -62,6 +65,7 @@ private:
   void make_menu_bar();
 
   void update_lists();
+  void update_list(wxListBox *lbox, ProgramState &pstate);
 
   wxDECLARE_EVENT_TABLE();
 };

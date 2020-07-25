@@ -53,17 +53,13 @@ Frame::Frame(const wxString& title, Sleigh &sleigh_ref)
 void Frame::make_frame_panels() {
   wxGridBagSizer *const sizer = new wxGridBagSizer();
 
-  // sizer->Add(make_set_list_songs_panel(this), POS(0, 0), SPAN(3, 1), wxEXPAND);
-  // sizer->Add(make_song_patches_panel(this), POS(0, 1), SPAN(3, 1), wxEXPAND);
-  // sizer->Add(make_clock_panel(this), POS(0, 2), SPAN(1, 1), wxEXPAND);
-  // sizer->Add(make_notes_panel(this), POS(1, 2), SPAN(2, 1), wxEXPAND);
+  file_programs_wxlist = new wxListBox(this, wxID_ANY, wxDefaultPosition,
+                                       wxSize(200, 400), 0, nullptr, wxLB_MULTIPLE);
+  sizer->Add(file_programs_wxlist, POS(0, 0), SPAN(8, 3), wxEXPAND);
 
-  // sizer->Add(make_patch_conns_panel(this), POS(3, 0), SPAN(1, 3), wxEXPAND);
-
-  // sizer->Add(make_set_lists_panel(this), POS(4, 0), SPAN(1, 1), wxEXPAND);
-  // sizer->Add(make_messages_panel(this), POS(4, 1), SPAN(1, 1), wxEXPAND);
-  // sizer->Add(make_triggers_panel(this), POS(4, 2), SPAN(1, 1), wxEXPAND);
-
+  sledge_programs_wxlist = new wxListBox(this, wxID_ANY, wxDefaultPosition,
+                                         wxSize(200, 400), 0, nullptr, wxLB_MULTIPLE);
+  sizer->Add(sledge_programs_wxlist, POS(0, 4), SPAN(8, 3), wxEXPAND);
 
   wxBoxSizer * const outer_border_sizer = new wxBoxSizer(wxVERTICAL);
   outer_border_sizer->Add(sizer, wxSizerFlags().Expand().Border());
@@ -205,7 +201,22 @@ void Frame::save() {
 }
 
 void Frame::update() {
+  update_lists();
   update_menu_items();
+}
+
+void Frame::update_lists() {
+  update_list(file_programs_wxlist, sleigh.editor->from_file);
+  update_list(sledge_programs_wxlist, sleigh.editor->synth);
+}
+
+void Frame::update_list(wxListBox *lbox, ProgramState &pstate) {
+  lbox->Clear();
+
+  wxArrayString names;
+  for (auto &prog : pstate.sledge.programs)
+    names.Add(prog.name_str());
+  lbox->InsertItems(names, 0);
 }
 
 void Frame::update_menu_items() {
