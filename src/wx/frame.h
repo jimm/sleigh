@@ -52,8 +52,8 @@ private:
   Sleigh &sleigh;
   wxString file_path;
   wxMenuBar *menu_bar;
-  wxListBox *file_programs_wxlist;
-  wxListBox *sledge_programs_wxlist;
+  wxListCtrl *file_programs_wxlist;
+  wxListCtrl *sledge_programs_wxlist;
   int clear_msg_secs;
   int clear_msg_id;
 
@@ -73,7 +73,7 @@ private:
   void make_menu_bar();
 
   void update_lists();
-  void update_list(wxListBox *lbox, SledgeProgram *programs);
+  void update_list(wxListCtrl *lbox, SledgeProgram *programs);
   void update_buttons();
 
   wxDECLARE_EVENT_TABLE();

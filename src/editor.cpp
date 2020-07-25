@@ -98,7 +98,6 @@ void Editor::transmit_selected() {
   //     changed();
   //   }
   last_transmitted_prog = EDITOR_TRANSMIT_DONE;
-  changed();
 }
 
 // Expands tilde or env var at beginning of path and writes expanded path

@@ -62,7 +62,10 @@ void App::OnInitCmdLine(wxCmdLineParser& parser) {
 bool App::OnCmdLineParsed(wxCmdLineParser& parser) {
   long long_val;
 
-  opts.list_devices = parser.Found("l");
+  if (parser.Found("l")) {
+    sleigh.print_sources_and_destinations();
+    return false;
+  }
   opts.testing = parser.Found("t");
   opts.debug = parser.Found("d");
   if (parser.Found("c", &long_val))

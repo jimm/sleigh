@@ -7,15 +7,13 @@
 typedef unsigned char byte;
 
 struct opts {
-  bool list_devices;
   bool testing;
   bool debug;
   int channel;
   int input_num;
   int output_num;
 
-  opts() : list_devices(false), testing(false), debug(false),
-           channel(0), input_num(0), output_num(0) {}
+  opts() : testing(false), debug(false), channel(0), input_num(0), output_num(0) {}
 };
 
 class Editor;
@@ -33,20 +31,18 @@ public:
 
   ~Sleigh();
 
-  void parse_command_line(int argc, char * const *argv, struct opts *opts);
   void print_sources_and_destinations();
   void initialize(struct opts *opts);
   void start(struct opts *opts);
   void stop();
 
 private:
-  char * copy_cfstring(CFStringRef cf_str);
-  const char * cfstring_cstr_ptr(CFStringRef cf_str);
+  void init_midi(struct opts *opts);
+
+  char *copy_cfstring(CFStringRef cf_str);
+  const char *cfstring_cstr_ptr(CFStringRef cf_str);
   CFStringRef cstr_to_cfstring(const char *str);
   void name_of(MIDIObjectRef ref, char *buf);
-
-  void init_midi(struct opts *opts);
-  void usage(const char *prog_name);
 };
 
 #endif /* SLEIGH_H */

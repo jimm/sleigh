@@ -8,6 +8,7 @@
 #include "../sleigh.h"
 #include "../editor.h"
 
+#define CW 10
 #define POS(row, col) wxGBPosition(row, col)
 #define SPAN(rowspan, colspan) wxGBSpan(rowspan, colspan)
 
@@ -41,6 +42,13 @@ wxBEGIN_EVENT_TABLE(Frame, wxFrame)
   EVT_COMMAND(wxID_ANY, Frame_MenuUpdate, Frame::update_menu_items)
 wxEND_EVENT_TABLE()
 
+const char * const COLUMN_HEADERS[] = {
+  "Prog #", "Name", "Category"
+};
+const int COLUMN_WIDTHS[] = {
+  4*CW, 16*CW, 4*CW
+};
+
 void *frame_clear_user_message_thread(void *gui_vptr) {
   Frame *gui = (Frame *)gui_vptr;
   int clear_user_message_id = gui->clear_user_message_id();
@@ -67,8 +75,8 @@ void Frame::make_frame_panels() {
 
   // TODO lists should be reports: prog num, name, category
 
-  file_programs_wxlist = new wxListBox(this, wxID_ANY, wxDefaultPosition,
-                                       wxSize(200, 400), 0, nullptr, wxLB_MULTIPLE);
+  file_programs_wxlist = new wxListCtrl(this, wxID_ANY, wxDefaultPosition,
+                                        wxSize(200, 400), wxLC_REPORT);
   sizer->Add(file_programs_wxlist, POS(0, 0), SPAN(8, 3), wxEXPAND);
 
   int button_row = 3;
@@ -78,8 +86,8 @@ void Frame::make_frame_panels() {
   sizer->Add(new wxButton(this, ID_TransmitSelected, "Copy"), POS(button_row++, 3), SPAN(1, 1));
   sizer->Add(new wxButton(this, ID_TransmitSelected, "Move"), POS(button_row++, 3), SPAN(1, 1));
 
-  sledge_programs_wxlist = new wxListBox(this, wxID_ANY, wxDefaultPosition,
-                                         wxSize(200, 400), 0, nullptr, wxLB_MULTIPLE);
+  sledge_programs_wxlist = new wxListCtrl(this, wxID_ANY, wxDefaultPosition,
+                                          wxSize(200, 400), wxLC_REPORT);
   sizer->Add(sledge_programs_wxlist, POS(0, 4), SPAN(8, 3), wxEXPAND);
 
   wxBoxSizer * const outer_border_sizer = new wxBoxSizer(wxVERTICAL);
@@ -228,7 +236,7 @@ void Frame::load(wxString path) {
   show_user_message(string(wxString::Format("Loaded %s", path).c_str()), 15);
   file_path = path;
 
-  update();                     // must come after start
+  update();
 }
 
 void Frame::save() {
@@ -249,13 +257,17 @@ void Frame::update_lists() {
   update_list(sledge_programs_wxlist, &sleigh.editor->sledge.programs[0]);
 }
 
-void Frame::update_list(wxListBox *lbox, SledgeProgram *programs) {
-  lbox->Clear();
-
-  wxArrayString names;
-  for (int i = 0; i < NUM_SLEDGE_PROGRAMS; ++i)
-    names.Add(programs[i].name_str());
-  lbox->InsertItems(names, 0);
+void Frame::update_list(wxListCtrl *lbox, SledgeProgram *programs) {
+  lbox->ClearAll();
+  for (int i = 0; i < sizeof(COLUMN_HEADERS) / sizeof(const char * const); ++i) {
+    lbox->InsertColumn(i, COLUMN_HEADERS[i]);
+    lbox->SetColumnWidth(i, COLUMN_WIDTHS[i]);
+  }
+  for (int i = 0; i < NUM_SLEDGE_PROGRAMS; ++i) {
+    lbox->InsertItem(i, wxString::Format("%03d", i+1));
+    lbox->SetItem(i, 1, programs[i].name_str());
+    lbox->SetItem(i, 2, programs[i].category_str());
+  }
 }
 
 void Frame::update_buttons() {

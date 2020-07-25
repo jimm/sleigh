@@ -7,7 +7,7 @@
 
 #define EDITOR_TRANSMIT_DONE -1
 
-class Editor : public Observer, public Observable {
+class Editor {
 public:
   Sledge &sledge;
   SledgeProgram file_programs[NUM_SLEDGE_PROGRAMS];
