@@ -12,23 +12,11 @@
 
 #define toggle(x) ((x) = !(x))
 
-ProgramState::ProgramState(Sledge &s) : sledge(s) {
-  curr = 0;
-  for (int i = 0; i < 1000; ++i) {
-    sledge.programs[i].sysex = SLEDGE_UNINITIALIZED;
-    selected[i] = false;
-  }
-}
-
 Editor::Editor(Sledge &s, const char * const sysex_dir)
-  : synth(s), from_file(s)
+  : sledge(s)
 {
   if (sysex_dir)
     default_sysex_dir = sysex_dir;
-}
-
-void Editor::update(Observable *_o) {
-  synth.curr = synth.sledge.last_received_program();
 }
 
 // Loads into `from_file`.
@@ -43,14 +31,11 @@ int Editor::load(const char * const path) {
   }
   while (fread(&prog, SLEDGE_PROGRAM_SYSEX_LEN, 1, fp) == 1) {
     int prog_num = prog.program_number();
-    memcpy((void *)&from_file.sledge.programs[prog_num], &prog, SLEDGE_PROGRAM_SYSEX_LEN);
-    from_file.sledge.programs[prog_num].update();
+    memcpy((void *)&file_programs[prog_num], &prog, SLEDGE_PROGRAM_SYSEX_LEN);
+    file_programs[prog_num].update();
   }
   fclose(fp);
 
-  from_file.curr = 0;
-  for (int i = 0; i < 1000; ++i)
-    from_file.selected[i] = false;
   return 0;
 }
 
@@ -63,104 +48,57 @@ int Editor::save(const char * const path) {
     debug("%s\n", error_message);
     return errno;
   }
-  for (int i = 0; i < 1000; ++i)
-    if (synth.sledge.programs[i].sysex != 0)
-      fwrite(&synth.sledge.programs[i], SLEDGE_PROGRAM_SYSEX_LEN, 1, fp);
+  for (int i = 0; i < NUM_SLEDGE_PROGRAMS; ++i)
+    if (sledge.programs[i].sysex != 0)
+      fwrite(&sledge.programs[i], SLEDGE_PROGRAM_SYSEX_LEN, 1, fp);
   fclose(fp);
   return 0;
 }
 
 void Editor::copy_file_to_synth(int prog_num) {
-  copy_or_move(from_file, synth, prog_num, false);
+  copy_or_move(&file_programs[0], &sledge.programs[0], prog_num, false);
 }
 
 void Editor::copy_within_synth(int prog_num) {
-  copy_or_move(synth, synth, prog_num, false);
+  copy_or_move(&sledge.programs[0], &sledge.programs[0], prog_num, false);
 }
 
 void Editor::move_within_synth(int prog_num) {
-  copy_or_move(synth, synth, prog_num, true);
+  copy_or_move(&sledge.programs[0], &sledge.programs[0], prog_num, true);
 }
 
-void Editor::copy_or_move(ProgramState &from, ProgramState &to,
-                          int prog_num, bool init_src)
+void Editor::copy_or_move(SledgeProgram *from, SledgeProgram *to, int prog_num, bool init_src)
 {
-  for (int i = 0; i < 1000 && prog_num < 1000; ++i) {
-    if (from.selected[i]) {
-      SledgeProgram *src = &from.sledge.programs[i];
-      SledgeProgram *dest = &to.sledge.programs[prog_num];
+  // FIXME
+  // for (int i = 0; i < NUM_SLEDGE_PROGRAMS && prog_num < NUM_SLEDGE_PROGRAMS; ++i) {
+  //   if (from.selected[i]) {
+  //     SledgeProgram *src = from[i];
+  //     SledgeProgram *dest = to[prog_num];
 
-      memcpy((void *)dest, (void *)src, SLEDGE_PROGRAM_SYSEX_LEN);
-      dest->set_program_number(prog_num);
-      if (init_src) {
-        memcpy((void *)src, (void *)&sledge_init_program, SLEDGE_PROGRAM_SYSEX_LEN);
-        src->update();
-      }
-      dest->update();
-      ++prog_num;
-    }
-  }
-  synth.sledge.changed();
+  //     memcpy((void *)dest, (void *)src, SLEDGE_PROGRAM_SYSEX_LEN);
+  //     dest->set_program_number(prog_num);
+  //     if (init_src) {
+  //       memcpy((void *)src, (void *)&sledge_init_program, SLEDGE_PROGRAM_SYSEX_LEN);
+  //       src->update();
+  //     }
+  //     dest->update();
+  //     ++prog_num;
+  //   }
+  // }
+  sledge.changed();
 }
 
 void Editor::transmit_selected() {
-  for (int i = 0; i < 1000; ++i)
-    if (synth.selected[i]) {
-      usleep(10);
-      synth.sledge.send_sysex((const byte *)&synth.sledge.programs[i],
-                               SLEDGE_PROGRAM_SYSEX_LEN);
-      last_transmitted_prog = i;
-      changed();
-    }
+  // FIXME
+  // for (int i = 0; i < NUM_SLEDGE_PROGRAMS; ++i)
+  //   if (synth.selected[i]) {
+  //     usleep(10);
+  //     sledge.send_sysex((const byte *)&sledge.programs[i], SLEDGE_PROGRAM_SYSEX_LEN);
+  //     last_transmitted_prog = i;
+  //     changed();
+  //   }
   last_transmitted_prog = EDITOR_TRANSMIT_DONE;
   changed();
-}
-
-void Editor::select(int which, int index, bool shifted) {
-  ProgramState &state = which == EDITOR_SLEDGE ? synth : from_file;
-  int old_curr = state.curr;
-
-  state.curr = index;
-
-  if (!shifted) {
-    bool was_selected = state.selected[state.curr];
-    for (int i = 0; i < 1000; ++i)
-      state.selected[i] = false;
-    state.selected[state.curr] = !was_selected;
-    return;
-  }
-
-  if (old_curr == state.curr) {
-    toggle(state.selected[state.curr]);
-    return;
-  }
-
-  int curr_min = 1001, curr_max = -1;
-  for (int i = 0; i < 1000; ++i) {
-    if (state.selected[i]) {
-      if (i < curr_min) curr_min = i;
-      if (i > curr_max) curr_max = i;
-    }
-  }
-
-  // curr is in range of already-selected items; toggle it.
-  if (state.curr >= curr_min && state.curr <= curr_max) {
-    toggle(state.selected[state.curr]);
-    return;
-  }
-
-  // curr is less than current min, extend range down.
-  if (state.curr < curr_min) {
-    for (int i = state.curr; i < curr_min; ++i)
-      state.selected[i] = true;
-    return;
-  }
-
-  // curr is greater than current min, extend range up.
-  if (state.curr > curr_max) {
-    for (int i = curr_max + 1; i <= state.curr; ++i)
-      state.selected[i] = true;
-  }
 }
 
 // Expands tilde or env var at beginning of path and writes expanded path

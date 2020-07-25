@@ -26,6 +26,18 @@ wxBEGIN_EVENT_TABLE(Frame, wxFrame)
   EVT_MENU(wxID_SAVEAS,  Frame::OnSaveAs)
   EVT_MENU(wxID_ABOUT, Frame::OnAbout)
 
+  EVT_MENU(ID_TransmitSelected, Frame::transmit_selected)
+  EVT_MENU(ID_SendProgramChange, Frame::send_program_change)
+  EVT_MENU(ID_CopyFileToSynth, Frame::copy_file_to_synth)
+  EVT_MENU(ID_CopyWithinSynth, Frame::copy_within_synth)
+  EVT_MENU(ID_MoveWithinSynth, Frame::move_within_synth)
+
+  EVT_BUTTON(ID_TransmitSelected, Frame::transmit_selected)
+  EVT_BUTTON(ID_SendProgramChange, Frame::send_program_change)
+  EVT_BUTTON(ID_CopyFileToSynth, Frame::copy_file_to_synth)
+  EVT_BUTTON(ID_CopyWithinSynth, Frame::copy_within_synth)
+  EVT_BUTTON(ID_MoveWithinSynth, Frame::move_within_synth)
+
   EVT_COMMAND(wxID_ANY, Frame_MenuUpdate, Frame::update_menu_items)
 wxEND_EVENT_TABLE()
 
@@ -53,9 +65,18 @@ Frame::Frame(const wxString& title, Sleigh &sleigh_ref)
 void Frame::make_frame_panels() {
   wxGridBagSizer *const sizer = new wxGridBagSizer();
 
+  // TODO lists should be reports: prog num, name, category
+
   file_programs_wxlist = new wxListBox(this, wxID_ANY, wxDefaultPosition,
                                        wxSize(200, 400), 0, nullptr, wxLB_MULTIPLE);
   sizer->Add(file_programs_wxlist, POS(0, 0), SPAN(8, 3), wxEXPAND);
+
+  int button_row = 3;
+  sizer->Add(new wxButton(this, ID_TransmitSelected, "Xmit Selected"), POS(button_row++, 3), SPAN(1, 1));
+  sizer->Add(new wxButton(this, ID_TransmitSelected, "Program Change"), POS(button_row++, 3), SPAN(1, 1));
+  sizer->Add(new wxButton(this, ID_TransmitSelected, ">>"), POS(button_row++, 3), SPAN(1, 1));
+  sizer->Add(new wxButton(this, ID_TransmitSelected, "Copy"), POS(button_row++, 3), SPAN(1, 1));
+  sizer->Add(new wxButton(this, ID_TransmitSelected, "Move"), POS(button_row++, 3), SPAN(1, 1));
 
   sledge_programs_wxlist = new wxListBox(this, wxID_ANY, wxDefaultPosition,
                                          wxSize(200, 400), 0, nullptr, wxLB_MULTIPLE);
@@ -121,6 +142,23 @@ void Frame::clear_user_message_after(int secs) {
 
   pthread_t pthread;
   pthread_create(&pthread, 0, frame_clear_user_message_thread, this);
+}
+
+// ================ actions ================
+
+void Frame::transmit_selected() {
+}
+
+void Frame::send_program_change() {
+}
+
+void Frame::copy_file_to_synth() {
+}
+
+void Frame::copy_within_synth() {
+}
+
+void Frame::move_within_synth() {
 }
 
 // ================ standard menu items ================
@@ -202,21 +240,27 @@ void Frame::save() {
 
 void Frame::update() {
   update_lists();
+  update_buttons();
   update_menu_items();
 }
 
 void Frame::update_lists() {
-  update_list(file_programs_wxlist, sleigh.editor->from_file);
-  update_list(sledge_programs_wxlist, sleigh.editor->synth);
+  update_list(file_programs_wxlist, &sleigh.editor->file_programs[0]);
+  update_list(sledge_programs_wxlist, &sleigh.editor->sledge.programs[0]);
 }
 
-void Frame::update_list(wxListBox *lbox, ProgramState &pstate) {
+void Frame::update_list(wxListBox *lbox, SledgeProgram *programs) {
   lbox->Clear();
 
   wxArrayString names;
-  for (auto &prog : pstate.sledge.programs)
-    names.Add(prog.name_str());
+  for (int i = 0; i < NUM_SLEDGE_PROGRAMS; ++i)
+    names.Add(programs[i].name_str());
   lbox->InsertItems(names, 0);
+}
+
+void Frame::update_buttons() {
+  // TODO disable move from file to synth if nothing selected on either side
+  // TODO disable transmit if nothing selecdted on synth side
 }
 
 void Frame::update_menu_items() {

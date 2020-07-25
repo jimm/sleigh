@@ -1,6 +1,9 @@
 #ifndef CONSTS_H
 #define CONSTS_H
 
+// Sledge constants
+#define NUM_SLEDGE_PROGRAMS 1000
+
 // MIDI constants
 
 // Number of MIDI channels

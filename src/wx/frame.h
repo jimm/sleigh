@@ -18,7 +18,7 @@ enum {
 };
 
 class wxTextCtrl;
-class ProgramState;
+class SledgeProgram;
 
 class Frame: public wxFrame {
 public:
@@ -42,7 +42,11 @@ public:
   int clear_user_message_seconds() { return clear_msg_secs; }
   int clear_user_message_id() { return clear_msg_id; }
 
-  // TODO action methods
+  void transmit_selected();
+  void send_program_change();
+  void copy_file_to_synth();
+  void copy_within_synth();
+  void move_within_synth();
 
 private:
   Sleigh &sleigh;
@@ -59,13 +63,18 @@ private:
   void OnSaveAs(wxCommandEvent& event);
   void OnAbout(wxCommandEvent& event);
 
-  // TODO action helpers
+  void transmit_selected(wxCommandEvent &_event) { transmit_selected(); }
+  void send_program_change(wxCommandEvent &_event) { send_program_change(); }
+  void copy_file_to_synth(wxCommandEvent &_event) { copy_file_to_synth(); }
+  void copy_within_synth(wxCommandEvent &_event) { copy_within_synth(); }
+  void move_within_synth(wxCommandEvent &_event) { move_within_synth(); }
 
   void make_frame_panels();
   void make_menu_bar();
 
   void update_lists();
-  void update_list(wxListBox *lbox, ProgramState &pstate);
+  void update_list(wxListBox *lbox, SledgeProgram *programs);
+  void update_buttons();
 
   wxDECLARE_EVENT_TABLE();
 };

@@ -2,6 +2,7 @@
 #define SLEDGE_H
 
 #include <CoreMIDI/MIDIServices.h>
+#include "consts.h"
 #include "observable.h"
 #include "sledge_program.h"
 
@@ -12,7 +13,7 @@ typedef unsigned char byte;
 class Sledge : public Observable {
 public:
   byte channel;
-  SledgeProgram programs[1000];
+  SledgeProgram programs[NUM_SLEDGE_PROGRAMS];
 
   Sledge(byte channel);         // channel 0-15
   Sledge() : channel(0) {}
