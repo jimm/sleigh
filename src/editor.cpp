@@ -55,48 +55,43 @@ int Editor::save(const char * const path) {
   return 0;
 }
 
-void Editor::copy_file_to_synth(int prog_num) {
-  copy_or_move(&file_programs[0], &sledge.programs[0], prog_num, false);
+void Editor::copy_file_to_synth(std::vector<int> &selected, int prog_num) {
+  copy_or_move(&file_programs[0], &sledge.programs[0], selected, prog_num, false);
 }
 
-void Editor::copy_within_synth(int prog_num) {
-  copy_or_move(&sledge.programs[0], &sledge.programs[0], prog_num, false);
+void Editor::copy_within_synth(std::vector<int> &selected, int prog_num) {
+  copy_or_move(&sledge.programs[0], &sledge.programs[0], selected, prog_num, false);
 }
 
-void Editor::move_within_synth(int prog_num) {
-  copy_or_move(&sledge.programs[0], &sledge.programs[0], prog_num, true);
+void Editor::move_within_synth(std::vector<int> &selected, int prog_num) {
+  copy_or_move(&sledge.programs[0], &sledge.programs[0], selected, prog_num, true);
 }
 
-void Editor::copy_or_move(SledgeProgram *from, SledgeProgram *to, int prog_num, bool init_src)
+void Editor::copy_or_move(SledgeProgram *from, SledgeProgram *to,
+                          std::vector<int> &selected, int prog_num, bool init_src)
 {
-  // FIXME
-  // for (int i = 0; i < NUM_SLEDGE_PROGRAMS && prog_num < NUM_SLEDGE_PROGRAMS; ++i) {
-  //   if (from.selected[i]) {
-  //     SledgeProgram *src = from[i];
-  //     SledgeProgram *dest = to[prog_num];
+  for (auto i : selected) {
+    SledgeProgram &src = from[i];
+    SledgeProgram &dest = to[prog_num];
 
-  //     memcpy((void *)dest, (void *)src, SLEDGE_PROGRAM_SYSEX_LEN);
-  //     dest->set_program_number(prog_num);
-  //     if (init_src) {
-  //       memcpy((void *)src, (void *)&sledge_init_program, SLEDGE_PROGRAM_SYSEX_LEN);
-  //       src->update();
-  //     }
-  //     dest->update();
-  //     ++prog_num;
-  //   }
-  // }
+    memcpy((void *)&dest, (void *)&src, SLEDGE_PROGRAM_SYSEX_LEN);
+    dest.set_program_number(prog_num);
+    if (init_src) {
+      memcpy((void *)&src, (void *)&sledge_init_program, SLEDGE_PROGRAM_SYSEX_LEN);
+      src.update();
+    }
+    dest.update();
+    ++prog_num;
+  }
   sledge.changed();
 }
 
-void Editor::transmit_selected() {
-  // FIXME
-  // for (int i = 0; i < NUM_SLEDGE_PROGRAMS; ++i)
-  //   if (synth.selected[i]) {
-  //     usleep(10);
-  //     sledge.send_sysex((const byte *)&sledge.programs[i], SLEDGE_PROGRAM_SYSEX_LEN);
-  //     last_transmitted_prog = i;
-  //     changed();
-  //   }
+void Editor::transmit_selected(std::vector<int> &selected) {
+  for (auto i : selected) {
+    usleep(10);
+    sledge.send_sysex((const byte *)&sledge.programs[i], SLEDGE_PROGRAM_SYSEX_LEN);
+    last_transmitted_prog = i;
+  }
   last_transmitted_prog = EDITOR_TRANSMIT_DONE;
 }
 

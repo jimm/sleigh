@@ -1,10 +1,10 @@
 #include <wx/defs.h>
 #include <wx/filename.h>
-#include <wx/listctrl.h>
-#include <wx/textctrl.h>
 #include <wx/gbsizer.h>
+#include <wx/numdlg.h>
 #include <unistd.h>
 #include "frame.h"
+#include "frame_list_ctrl.h"
 #include "../sleigh.h"
 #include "../editor.h"
 
@@ -18,7 +18,7 @@
 #define CLOCK_BPM_HEIGHT 16
 #define NOTES_WIDTH 200
 
-wxDEFINE_EVENT(Frame_MenuUpdate, wxCommandEvent);
+wxDEFINE_EVENT(Frame_StateUpdate, wxCommandEvent);
 
 wxBEGIN_EVENT_TABLE(Frame, wxFrame)
   EVT_MENU(wxID_NEW,  Frame::OnNew)
@@ -39,7 +39,7 @@ wxBEGIN_EVENT_TABLE(Frame, wxFrame)
   EVT_BUTTON(ID_CopyWithinSynth, Frame::copy_within_synth)
   EVT_BUTTON(ID_MoveWithinSynth, Frame::move_within_synth)
 
-  EVT_COMMAND(wxID_ANY, Frame_MenuUpdate, Frame::update_menu_items)
+  EVT_COMMAND(wxID_ANY, Frame_StateUpdate, Frame::state_changed)
 wxEND_EVENT_TABLE()
 
 const char * const COLUMN_HEADERS[] = {
@@ -75,19 +75,19 @@ void Frame::make_frame_panels() {
 
   // TODO lists should be reports: prog num, name, category
 
-  file_programs_wxlist = new wxListCtrl(this, wxID_ANY, wxDefaultPosition,
-                                        wxSize(200, 400), wxLC_REPORT);
+  file_programs_wxlist = new FrameListCtrl(this, ID_FileList, wxDefaultPosition,
+                                           wxSize(200, 400), wxLC_REPORT);
   sizer->Add(file_programs_wxlist, POS(0, 0), SPAN(8, 3), wxEXPAND);
 
   int button_row = 3;
-  sizer->Add(new wxButton(this, ID_TransmitSelected, "Xmit Selected"), POS(button_row++, 3), SPAN(1, 1));
-  sizer->Add(new wxButton(this, ID_TransmitSelected, "Program Change"), POS(button_row++, 3), SPAN(1, 1));
-  sizer->Add(new wxButton(this, ID_TransmitSelected, ">>"), POS(button_row++, 3), SPAN(1, 1));
-  sizer->Add(new wxButton(this, ID_TransmitSelected, "Copy"), POS(button_row++, 3), SPAN(1, 1));
-  sizer->Add(new wxButton(this, ID_TransmitSelected, "Move"), POS(button_row++, 3), SPAN(1, 1));
+  sizer->Add(xmit_button = new wxButton(this, ID_TransmitSelected, "Xmit Selected"), POS(button_row++, 3), SPAN(1, 1));
+  sizer->Add(pc_button = new wxButton(this, ID_SendProgramChange, "Program Change"), POS(button_row++, 3), SPAN(1, 1));
+  sizer->Add(xfer_button = new wxButton(this, ID_CopyFileToSynth, ">>"), POS(button_row++, 3), SPAN(1, 1));
+  sizer->Add(copy_button = new wxButton(this, ID_CopyWithinSynth, "Copy"), POS(button_row++, 3), SPAN(1, 1));
+  sizer->Add(move_button = new wxButton(this, ID_MoveWithinSynth, "Move"), POS(button_row++, 3), SPAN(1, 1));
 
-  sledge_programs_wxlist = new wxListCtrl(this, wxID_ANY, wxDefaultPosition,
-                                          wxSize(200, 400), wxLC_REPORT);
+  sledge_programs_wxlist = new FrameListCtrl(this, ID_SynthList, wxDefaultPosition,
+                                             wxSize(200, 400), wxLC_REPORT);
   sizer->Add(sledge_programs_wxlist, POS(0, 4), SPAN(8, 3), wxEXPAND);
 
   wxBoxSizer * const outer_border_sizer = new wxBoxSizer(wxVERTICAL);
@@ -155,24 +155,47 @@ void Frame::clear_user_message_after(int secs) {
 // ================ actions ================
 
 void Frame::transmit_selected() {
+  vector<int> selected = selected_indexes(file_programs_wxlist);
+  sleigh.editor->transmit_selected(selected);
 }
 
 void Frame::send_program_change() {
+  int prog_num = get_program_number("Send Program Change");
+  if (prog_num >= 0 && prog_num <= 999)
+    sleigh.sledge.program_change(prog_num);
 }
 
 void Frame::copy_file_to_synth() {
+  int prog_num = get_program_number("Copy from File to Sledge");
+  if (prog_num < 0)
+    return;
+
+  vector<int> selected = selected_indexes(file_programs_wxlist);
+  sleigh.editor->copy_file_to_synth(selected, prog_num);
 }
 
 void Frame::copy_within_synth() {
+  int prog_num = get_program_number("Copy Within Sledge");
+  if (prog_num < 0)
+    return;
+
+  vector<int> selected = selected_indexes(file_programs_wxlist);
+  sleigh.editor->copy_within_synth(selected, prog_num);
 }
 
 void Frame::move_within_synth() {
+  int prog_num = get_program_number("Move Within Synth");
+  if (prog_num < 0)
+    return;
+
+  vector<int> selected = selected_indexes(file_programs_wxlist);
+  sleigh.editor->move_within_synth(selected, prog_num);
 }
 
 // ================ standard menu items ================
 
 void Frame::OnAbout(wxCommandEvent &_event) {
-  wxMessageBox("Sleigh, the Studologic Sledge patch organizer.\n"
+  wxMessageBox("Sleigh, the Studologic Sledge patch organizer\n"
                "v1.0.0\n"
                "Jim Menard, jim@jimmenard.com\n"
                "https://github.com/jimm/sledge/wiki",
@@ -246,6 +269,11 @@ void Frame::save() {
   sleigh.editor->save(file_path);
 }
 
+void Frame::state_changed(wxCommandEvent &event) {
+  update_buttons();
+  update_menu_items();
+}
+
 void Frame::update() {
   update_lists();
   update_buttons();
@@ -271,8 +299,12 @@ void Frame::update_list(wxListCtrl *lbox, SledgeProgram *programs) {
 }
 
 void Frame::update_buttons() {
-  // TODO disable move from file to synth if nothing selected on either side
-  // TODO disable transmit if nothing selecdted on synth side
+  bool any_file_selected = file_programs_wxlist->GetSelectedItemCount() > 0;
+  bool any_synth_selected = sledge_programs_wxlist->GetSelectedItemCount() > 0;
+  xfer_button->Enable(any_file_selected);
+  xmit_button->Enable(any_synth_selected);
+  copy_button->Enable(any_synth_selected);
+  move_button->Enable(any_synth_selected);
 }
 
 void Frame::update_menu_items() {
@@ -281,6 +313,29 @@ void Frame::update_menu_items() {
   menu_bar->FindItem(wxID_SAVEAS, nullptr)->Enable(!file_path.empty());
 
   // sledge menu
-  // if no file load
-  // if no progs selected, disable xmit selected
+  bool any_file_selected = file_programs_wxlist->GetSelectedItemCount() > 0;
+  bool any_synth_selected = sledge_programs_wxlist->GetSelectedItemCount() > 0;
+  menu_bar->FindItem(ID_TransmitSelected, nullptr)->Enable(any_synth_selected);
+  menu_bar->FindItem(ID_CopyFileToSynth, nullptr)->Enable(any_file_selected);
+  menu_bar->FindItem(ID_CopyWithinSynth, nullptr)->Enable(any_synth_selected);
+  menu_bar->FindItem(ID_MoveWithinSynth, nullptr)->Enable(any_synth_selected);
+}
+
+// Returns -1 if cancelled
+int Frame::get_program_number(const char * const prompt) {
+  wxNumberEntryDialog dialog(this, prompt, "Destination", "Target Sledge Program", 0, 0, 999);
+  return (dialog.ShowModal() == wxID_OK) ? dialog.GetValue() : -1;
+}
+
+std::vector<int> Frame::selected_indexes(FrameListCtrl *list) {
+  vector<int> selected;
+  long index = -1;
+
+  while (true) {
+    index = list->GetNextItem(index, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+    if (index == -1)
+        break;
+    selected.push_back((int)index);
+}
+  return selected;
 }

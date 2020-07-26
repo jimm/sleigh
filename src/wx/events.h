@@ -6,7 +6,7 @@
  #include <wx/wx.h>
 #endif
 
-wxDECLARE_EVENT(Frame_MenuUpdate, wxCommandEvent);
+wxDECLARE_EVENT(Frame_StateUpdate, wxCommandEvent);
 
 
 #endif /* EVENTS_H */

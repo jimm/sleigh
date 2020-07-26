@@ -1,6 +1,7 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
+#include <vector>
 #include <string>
 #include "sledge.h"
 #include "sledge_program.h"
@@ -23,10 +24,10 @@ public:
   int load(const char * const path); // returns 0 if OK, else error_message set
   int save(const char * const path); // ditto
 
-  void copy_file_to_synth(int prog_num);
-  void copy_within_synth(int prog_num);
-  void move_within_synth(int prog_num);
-  void transmit_selected();
+  void copy_file_to_synth(std::vector<int> &selected, int prog_num);
+  void copy_within_synth(std::vector<int> &selected, int prog_num);
+  void move_within_synth(std::vector<int> &selected, int prog_num);
+  void transmit_selected(std::vector<int> &selected);
   OSStatus send_program_change(int prog_num) {
     return sledge.program_change(prog_num);
   }
@@ -36,7 +37,7 @@ private:
 
   const char * expand_and_save_path(char *path);
   void copy_or_move(SledgeProgram *from, SledgeProgram *to,
-                    int prog_num, bool init_src);
+                    std::vector<int> &selected, int prog_num, bool init_src);
 };
 
 #endif /* EDITOR_H */

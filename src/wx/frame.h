@@ -1,6 +1,7 @@
 #ifndef WX_FRAME_H
 #define WX_FRAME_H
 
+#include <vector>
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP
  #include <wx/wx.h>
@@ -14,11 +15,14 @@ enum {
   ID_SendProgramChange,
   ID_CopyFileToSynth,
   ID_CopyWithinSynth,
-  ID_MoveWithinSynth
+  ID_MoveWithinSynth,
+  ID_FileList,
+  ID_SynthList
 };
 
 class wxTextCtrl;
 class SledgeProgram;
+class FrameListCtrl;
 
 class Frame: public wxFrame {
 public:
@@ -52,8 +56,13 @@ private:
   Sleigh &sleigh;
   wxString file_path;
   wxMenuBar *menu_bar;
-  wxListCtrl *file_programs_wxlist;
-  wxListCtrl *sledge_programs_wxlist;
+  FrameListCtrl *file_programs_wxlist;
+  FrameListCtrl *sledge_programs_wxlist;
+  wxButton *xmit_button;
+  wxButton *pc_button;
+  wxButton *xfer_button;
+  wxButton *copy_button;
+  wxButton *move_button;
   int clear_msg_secs;
   int clear_msg_id;
 
@@ -72,9 +81,14 @@ private:
   void make_frame_panels();
   void make_menu_bar();
 
+  void state_changed(wxCommandEvent &event);
+
   void update_lists();
   void update_list(wxListCtrl *lbox, SledgeProgram *programs);
   void update_buttons();
+
+  int get_program_number(const char * const prompt);
+  std::vector<int> selected_indexes(FrameListCtrl *list);
 
   wxDECLARE_EVENT_TABLE();
 };
