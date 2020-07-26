@@ -50,18 +50,7 @@ void Sleigh::start(struct opts *opts) {
 
 void Sleigh::stop() {
   debug("Sleigh::stop\n");
-  OSStatus err = MIDIPortDisconnectSource(my_in_port, sledge_out_end_ref);
-  if (err != 0)
-    fprintf(stderr, "MIDIPortDisconnectSource error: %d\n", err);
-
-  err = MIDIPortDispose(my_in_port);
-  if (err != 0)
-    fprintf(stderr, "MIDIPortDispose error: %d\n", err);
-
-  err = MIDIPortDispose(my_out_port);
-  if (err != 0)
-    fprintf(stderr, "MIDIPortDispose error: %d\n", err);
-
+  stop_midi();
   cleanup_debug();
 }
 
@@ -76,6 +65,25 @@ void Sleigh::init_midi(struct opts *opts) {
   if (err != 0)
     printf("MIDIClientCreate error: %d\n", err);
   CFRelease(cf_str);
+
+  // Find I/O endpoints if not specified
+  if (opts->input_num == UNASSIGNED_ENDPOINT_NUM)
+    opts->input_num = find_sledge_source();
+  if (opts->output_num == UNASSIGNED_ENDPOINT_NUM)
+    opts->output_num = find_sledge_destination();
+  err = 0;
+  if (opts->input_num == UNASSIGNED_ENDPOINT_NUM) {
+    printf("error: can not find sledge input; please specify on the command line\n");
+    err = -1;
+  }
+  if (opts->output_num == UNASSIGNED_ENDPOINT_NUM) {
+    printf("error: can not find sledge output; please specify on the command line\n");
+    err = -1;
+  }
+  if (err != 0) {
+    cleanup_debug();
+    exit(0);
+  }
 
   // Sledge endpoints
   sledge_in_end_ref = MIDIGetDestination(opts->input_num);
@@ -106,6 +114,44 @@ void Sleigh::init_midi(struct opts *opts) {
     printf("MIDIPortConnectSource error: %d\n", err);
 
   sledge.set_output(my_out_port, sledge_in_end_ref);
+}
+
+void Sleigh::stop_midi() {
+  OSStatus err = MIDIPortDisconnectSource(my_in_port, sledge_out_end_ref);
+  if (err != 0)
+    fprintf(stderr, "MIDIPortDisconnectSource error: %d\n", err);
+
+  err = MIDIPortDispose(my_in_port);
+  if (err != 0)
+    fprintf(stderr, "MIDIPortDispose error: %d\n", err);
+
+  err = MIDIPortDispose(my_out_port);
+  if (err != 0)
+    fprintf(stderr, "MIDIPortDispose error: %d\n", err);
+}
+
+int Sleigh::find_sledge_source() {
+  char val[CFSTRING_BUF_SIZE];
+  ItemCount i, ndev = MIDIGetNumberOfSources();
+  for (i = 0; i < ndev; ++i) {
+    MIDIEndpointRef end_ref = MIDIGetSource(i);
+    name_of(end_ref, val);
+    if (strcmp(val, "Fatar SRL") == 0)
+      return i;
+  }
+  return UNASSIGNED_ENDPOINT_NUM;
+}
+
+int Sleigh::find_sledge_destination() {
+  char val[CFSTRING_BUF_SIZE];
+  ItemCount i, ndev = MIDIGetNumberOfDestinations();
+  for (i = 0; i < ndev; ++i) {
+    MIDIEndpointRef end_ref = MIDIGetDestination(i);
+    name_of(end_ref, val);
+    if (strcmp(val, "Sledge") == 0)
+      return i;
+  }
+  return UNASSIGNED_ENDPOINT_NUM;
 }
 
 // Returns a C string that is a newly allocated copy of cf_str.

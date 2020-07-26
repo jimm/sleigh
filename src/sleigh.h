@@ -5,6 +5,8 @@
 #include "types.h"
 #include "sledge.h"
 
+#define UNASSIGNED_ENDPOINT_NUM -1
+
 struct opts {
   bool testing;
   bool debug;
@@ -12,7 +14,10 @@ struct opts {
   int input_num;
   int output_num;
 
-  opts() : testing(false), debug(false), channel(0), input_num(0), output_num(0) {}
+  opts()
+    : testing(false), debug(false), channel(0),
+      input_num(UNASSIGNED_ENDPOINT_NUM), output_num(UNASSIGNED_ENDPOINT_NUM)
+    {}
 };
 
 class Editor;
@@ -36,6 +41,10 @@ public:
 
 private:
   void init_midi(struct opts *opts);
+  void stop_midi();
+
+  int find_sledge_source();
+  int find_sledge_destination();
 
   char *copy_cfstring(CFStringRef cf_str);
   const char *cfstring_cstr_ptr(CFStringRef cf_str);

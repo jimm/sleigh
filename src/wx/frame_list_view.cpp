@@ -1,13 +1,24 @@
 #include "../consts.h"
+#include "../sledge_program.h"
 #include "frame_list_view.h"
 #include "events.h"
+
+#define CW 10
+
+const char * const COLUMN_HEADERS[] = {
+  "Prog #", "Name", "Category"
+};
+const int COLUMN_WIDTHS[] = {
+  5*CW, 16*CW, 6*CW
+};
 
 /*
  * A FrameListView is a wxListView that tells the frame to update its menu
  * whenever an item is selected/deselected.
  */
-FrameListView::FrameListView(wxWindow *parent, wxWindowID id, wxPoint pos, wxSize size, long style)
-  : wxListView(parent, id, pos, size, style)
+FrameListView::FrameListView(SledgeProgram *progs, wxWindow *parent, wxWindowID id,
+                             wxPoint pos, wxSize size, long style)
+  : programs(progs), wxListView(parent, id, pos, size, style)
 {
 }
 
@@ -28,12 +39,25 @@ void FrameListView::select_indexes(int start, int len) {
   }
 }
 
-// If `event` is a list (de)selection event, broadcast a Frame_StateUpdate
-// event.
+void FrameListView::update() {
+  ClearAll();
+  for (int i = 0; i < sizeof(COLUMN_HEADERS) / sizeof(const char * const); ++i) {
+    InsertColumn(i, COLUMN_HEADERS[i]);
+    SetColumnWidth(i, COLUMN_WIDTHS[i]);
+  }
+  for (int i = 0; i < NUM_SLEDGE_PROGRAMS-1; ++i) {
+    InsertItem(i, wxString::Format("%03d", i+1));
+    SetItem(i, 1, programs[i].name_str());
+    SetItem(i, 2, programs[i].category_str());
+  }
+}
+
+// If `event` is a list (de)selection event, broadcast a
+// Frame_SelectionUpdate event.
 bool FrameListView::TryAfter(wxEvent &event) {
   wxEventType type = event.GetEventType();
   if (type == wxEVT_LIST_ITEM_SELECTED || type == wxEVT_LIST_ITEM_DESELECTED) {
-    wxCommandEvent e(Frame_StateUpdate, GetId());
+    wxCommandEvent e(Frame_SelectionUpdate, GetId());
     wxPostEvent(GetParent(), e);
   }
   return wxListView::TryAfter(event);

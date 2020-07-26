@@ -87,7 +87,6 @@ private:
   void state_changed(wxCommandEvent &event);
 
   void update_lists();
-  void update_list(wxListView *lbox, SledgeProgram *programs);
   void update_buttons();
 
   int get_program_number(const char * const prompt);
