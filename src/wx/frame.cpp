@@ -17,7 +17,8 @@
 #define CLOCK_BPM_HEIGHT 16
 #define NOTES_WIDTH 200
 
-wxDEFINE_EVENT(Frame_StateUpdate, wxCommandEvent);
+wxDEFINE_EVENT(Frame_Update, wxCommandEvent);
+wxDEFINE_EVENT(Frame_SelectionUpdate, wxCommandEvent);
 
 wxBEGIN_EVENT_TABLE(Frame, wxFrame)
   EVT_MENU(wxID_NEW,  Frame::OnNew)
@@ -38,7 +39,8 @@ wxBEGIN_EVENT_TABLE(Frame, wxFrame)
   EVT_BUTTON(ID_CopyWithinSynth, Frame::copy_within_synth)
   EVT_BUTTON(ID_MoveWithinSynth, Frame::move_within_synth)
 
-  EVT_COMMAND(wxID_ANY, Frame_StateUpdate, Frame::state_changed)
+  EVT_COMMAND(wxID_ANY, Frame_Update, Frame::update)
+  EVT_COMMAND(wxID_ANY, Frame_SelectionUpdate, Frame::selection_changed)
 wxEND_EVENT_TABLE()
 
 void *frame_clear_user_message_thread(void *gui_vptr) {
@@ -277,9 +279,18 @@ void Frame::save() {
   sleigh.editor->save(file_path);
 }
 
-void Frame::state_changed(wxCommandEvent &event) {
+void Frame::selection_changed(wxCommandEvent &event) {
   update_buttons();
   update_menu_items();
+}
+
+#include <pthread.h>           // DEBUG
+void Frame::update(Observable *o) {
+  fprintf(stderr, "Frame::update in thread %p\n", pthread_self()); // DEBUG
+  // We are called from a different thread (the Sledge MIDI-handling
+  // thread), so we need to use wxQueueEvent.
+  wxCommandEvent *e = new wxCommandEvent(Frame_Update, GetId());
+  wxQueueEvent(this, e);
 }
 
 void Frame::update() {

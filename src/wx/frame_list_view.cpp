@@ -20,6 +20,14 @@ FrameListView::FrameListView(SledgeProgram *progs, wxWindow *parent, wxWindowID 
                              wxPoint pos, wxSize size, long style)
   : programs(progs), wxListView(parent, id, pos, size, style)
 {
+  for (int i = 0; i < sizeof(COLUMN_HEADERS) / sizeof(const char * const); ++i) {
+    InsertColumn(i, COLUMN_HEADERS[i]);
+    SetColumnWidth(i, COLUMN_WIDTHS[i]);
+  }
+  for (int i = 0; i < NUM_SLEDGE_PROGRAMS-1; ++i)
+    InsertItem(i, wxString::Format("%03d", i+1));
+  first_update = true;
+  update();
 }
 
 std::vector<int> FrameListView::selected_indexes() {
@@ -39,17 +47,16 @@ void FrameListView::select_indexes(int start, int len) {
   }
 }
 
+#include <pthread.h>            // DEBUG
 void FrameListView::update() {
-  ClearAll();
-  for (int i = 0; i < sizeof(COLUMN_HEADERS) / sizeof(const char * const); ++i) {
-    InsertColumn(i, COLUMN_HEADERS[i]);
-    SetColumnWidth(i, COLUMN_WIDTHS[i]);
-  }
+  fprintf(stderr, "FrameListView::update in thread %p\n", pthread_self()); // DEBUG
   for (int i = 0; i < NUM_SLEDGE_PROGRAMS-1; ++i) {
-    InsertItem(i, wxString::Format("%03d", i+1));
-    SetItem(i, 1, programs[i].name_str());
-    SetItem(i, 2, programs[i].category_str());
+    if (first_update || GetItemText(i, 1) != programs[i].name_str())
+      SetItem(i, 1, programs[i].name_str());
+    if (first_update || GetItemText(i, 2) != programs[i].category_str())
+      SetItem(i, 2, programs[i].category_str());
   }
+  first_update = false;
 }
 
 // If `event` is a list (de)selection event, broadcast a

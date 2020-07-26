@@ -18,6 +18,7 @@ public:
 
 protected:
   SledgeProgram *programs;
+  bool first_update;
 
   virtual bool TryAfter(wxEvent &event);
 };

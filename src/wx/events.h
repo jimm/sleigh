@@ -6,7 +6,8 @@
  #include <wx/wx.h>
 #endif
 
-wxDECLARE_EVENT(Frame_StateUpdate, wxCommandEvent);
+wxDECLARE_EVENT(Frame_Update, wxCommandEvent);
+wxDECLARE_EVENT(Frame_SelectionUpdate, wxCommandEvent);
 
 
 #endif /* EVENTS_H */

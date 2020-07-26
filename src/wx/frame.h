@@ -36,7 +36,7 @@ public:
 
 
   void update(wxCommandEvent& event) { update(); }
-  virtual void update(Observable *o) { update(); }
+  virtual void update(Observable *o);
   void update();
 
   void update_menu_items(wxCommandEvent& event) { update_menu_items(); }
@@ -84,7 +84,7 @@ private:
   void make_frame_panels();
   void make_menu_bar();
 
-  void state_changed(wxCommandEvent &event);
+  void selection_changed(wxCommandEvent &event);
 
   void update_lists();
   void update_buttons();
