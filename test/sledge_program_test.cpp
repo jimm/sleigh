@@ -1,11 +1,18 @@
+#include <string.h>
 #include "test_helper.h"
-#include "../src/init_program.h"
+#include "../src/sledge_program.h"
 
 #define CATCH_CATEGORY "[program]"
 
+TEST_CASE("initialize", CATCH_CATEGORY) {
+  SledgeProgram sp;
+
+  REQUIRE(sp.sysex == SYSEX);
+  REQUIRE(strncmp((const char *)sp.name, "Init            ", SLEDGE_PROGRAM_NAME_LEN) == 0);
+}
+
 TEST_CASE("set program number", CATCH_CATEGORY) {
   SledgeProgram sp;
-  init_program(&sp);
 
   sp.set_program_number(0);
   REQUIRE(sp.prog_high == 0);
@@ -22,7 +29,6 @@ TEST_CASE("set program number", CATCH_CATEGORY) {
 
 TEST_CASE("program number", CATCH_CATEGORY) {
   SledgeProgram sp;
-  init_program(&sp);
 
   sp.set_program_number(0);
   REQUIRE(sp.program_number() == 0);
@@ -37,15 +43,14 @@ TEST_CASE("program number", CATCH_CATEGORY) {
 
 TEST_CASE("program update", CATCH_CATEGORY) {
   SledgeProgram sp;
-  init_program(&sp);
 
-  memcpy(sp.name, "abcdefghijklmnopqrstuvwxyz", SLEDGE_NAME_LEN);
+  memcpy(sp.name, "abcdefghijklmnopqrstuvwxyz", SLEDGE_PROGRAM_NAME_LEN);
   sp.category = 3;
   sp.update();
   REQUIRE(strcmp(sp.name_str(), "abcdefghijklmnop") == 0);
   REQUIRE(strcmp(sp.category_str(), "BASS") == 0);
 
-  memcpy(sp.name, "abc def         ", SLEDGE_NAME_LEN);
+  memcpy(sp.name, "abc def         ", SLEDGE_PROGRAM_NAME_LEN);
   sp.category = 9;
   sp.update();
   REQUIRE(strcmp(sp.name_str(), "abc def") == 0);

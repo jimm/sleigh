@@ -3,9 +3,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include "sledge.h"
-
-typedef unsigned char byte;
+#include "types.h"
 
 extern FILE *debug_fp;
 

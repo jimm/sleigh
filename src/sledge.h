@@ -3,12 +3,11 @@
 
 #include <CoreMIDI/MIDIServices.h>
 #include "consts.h"
+#include "types.h"
 #include "observable.h"
 #include "sledge_program.h"
 
 using namespace std;
-
-typedef unsigned char byte;
 
 class Sledge : public Observable {
 public:

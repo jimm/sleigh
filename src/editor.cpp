@@ -8,7 +8,6 @@
 #include <libgen.h>
 #include "editor.h"
 #include "utils.h"
-#include "init_program.h"
 
 #define toggle(x) ((x) = !(x))
 
@@ -76,11 +75,11 @@ void Editor::copy_or_move(SledgeProgram *from, SledgeProgram *to,
 
     memcpy((void *)&dest, (void *)&src, SLEDGE_PROGRAM_SYSEX_LEN);
     dest.set_program_number(prog_num);
+    dest.update();
     if (init_src) {
-      memcpy((void *)&src, (void *)&sledge_init_program, SLEDGE_PROGRAM_SYSEX_LEN);
+      src.initialize();
       src.update();
     }
-    dest.update();
     ++prog_num;
   }
   sledge.changed();

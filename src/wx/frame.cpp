@@ -4,7 +4,7 @@
 #include <wx/numdlg.h>
 #include <unistd.h>
 #include "frame.h"
-#include "frame_list_ctrl.h"
+#include "frame_list_view.h"
 #include "../sleigh.h"
 #include "../editor.h"
 
@@ -46,7 +46,7 @@ const char * const COLUMN_HEADERS[] = {
   "Prog #", "Name", "Category"
 };
 const int COLUMN_WIDTHS[] = {
-  4*CW, 16*CW, 4*CW
+  5*CW, 16*CW, 6*CW
 };
 
 void *frame_clear_user_message_thread(void *gui_vptr) {
@@ -67,28 +67,31 @@ Frame::Frame(const wxString& title, Sleigh &sleigh_ref)
   make_frame_panels();
   make_menu_bar();
   CreateStatusBar();
+  sleigh.sledge.add_observer(this);
+  update();
   show_user_message("No Sledge file loaded", 15);
 }
 
 void Frame::make_frame_panels() {
-  wxGridBagSizer *const sizer = new wxGridBagSizer();
+  wxGridBagSizer * const sizer = new wxGridBagSizer();
 
-  // TODO lists should be reports: prog num, name, category
-
-  file_programs_wxlist = new FrameListCtrl(this, ID_FileList, wxDefaultPosition,
-                                           wxSize(200, 400), wxLC_REPORT);
+  file_programs_wxlist = new FrameListView(this, ID_FileList, wxDefaultPosition,
+                                           wxSize(300, 600), wxLC_REPORT);
   sizer->Add(file_programs_wxlist, POS(0, 0), SPAN(8, 3), wxEXPAND);
 
-  int button_row = 3;
-  sizer->Add(xmit_button = new wxButton(this, ID_TransmitSelected, "Xmit Selected"), POS(button_row++, 3), SPAN(1, 1));
-  sizer->Add(pc_button = new wxButton(this, ID_SendProgramChange, "Program Change"), POS(button_row++, 3), SPAN(1, 1));
-  sizer->Add(xfer_button = new wxButton(this, ID_CopyFileToSynth, ">>"), POS(button_row++, 3), SPAN(1, 1));
-  sizer->Add(copy_button = new wxButton(this, ID_CopyWithinSynth, "Copy"), POS(button_row++, 3), SPAN(1, 1));
-  sizer->Add(move_button = new wxButton(this, ID_MoveWithinSynth, "Move"), POS(button_row++, 3), SPAN(1, 1));
+  wxBoxSizer * const button_sizer = new wxBoxSizer(wxVERTICAL);
+  button_sizer->Add(xmit_button = new wxButton(this, ID_TransmitSelected, "Xmit Selected"));
+  button_sizer->AddSpacer(10);
+  button_sizer->Add(pc_button = new wxButton(this, ID_SendProgramChange, "Program Change"));
+  button_sizer->AddSpacer(10);
+  button_sizer->Add(xfer_button = new wxButton(this, ID_CopyFileToSynth, ">>"));
+  button_sizer->Add(copy_button = new wxButton(this, ID_CopyWithinSynth, "Copy"));
+  button_sizer->Add(move_button = new wxButton(this, ID_MoveWithinSynth, "Move"));
+  sizer->Add(button_sizer, POS(3, 4), SPAN(5, 3), wxEXPAND);
 
-  sledge_programs_wxlist = new FrameListCtrl(this, ID_SynthList, wxDefaultPosition,
-                                             wxSize(200, 400), wxLC_REPORT);
-  sizer->Add(sledge_programs_wxlist, POS(0, 4), SPAN(8, 3), wxEXPAND);
+  sledge_programs_wxlist = new FrameListView(this, ID_SynthList, wxDefaultPosition,
+                                             wxSize(300, 600), wxLC_REPORT);
+  sizer->Add(sledge_programs_wxlist, POS(0, 8), SPAN(8, 3), wxEXPAND);
 
   wxBoxSizer * const outer_border_sizer = new wxBoxSizer(wxVERTICAL);
   outer_border_sizer->Add(sizer, wxSizerFlags().Expand().Border());
@@ -155,7 +158,7 @@ void Frame::clear_user_message_after(int secs) {
 // ================ actions ================
 
 void Frame::transmit_selected() {
-  vector<int> selected = selected_indexes(file_programs_wxlist);
+  vector<int> selected = file_programs_wxlist->selected_indexes();
   sleigh.editor->transmit_selected(selected);
 }
 
@@ -166,30 +169,45 @@ void Frame::send_program_change() {
 }
 
 void Frame::copy_file_to_synth() {
+  vector<int> selected = file_programs_wxlist->selected_indexes();
+  int num_selected = selected.size();
+  if (num_selected == 0)
+    return;
+
   int prog_num = get_program_number("Copy from File to Sledge");
   if (prog_num < 0)
     return;
 
-  vector<int> selected = selected_indexes(file_programs_wxlist);
   sleigh.editor->copy_file_to_synth(selected, prog_num);
+  sledge_programs_wxlist->select_indexes(prog_num, num_selected);
 }
 
 void Frame::copy_within_synth() {
+  vector<int> selected = sledge_programs_wxlist->selected_indexes();
+  int num_selected = selected.size();
+  if (num_selected == 0)
+    return;
+
   int prog_num = get_program_number("Copy Within Sledge");
   if (prog_num < 0)
     return;
 
-  vector<int> selected = selected_indexes(file_programs_wxlist);
   sleigh.editor->copy_within_synth(selected, prog_num);
+  sledge_programs_wxlist->select_indexes(prog_num, num_selected);
 }
 
 void Frame::move_within_synth() {
+  vector<int> selected = sledge_programs_wxlist->selected_indexes();
+  int num_selected = selected.size();
+  if (num_selected == 0)
+    return;
+
   int prog_num = get_program_number("Move Within Synth");
   if (prog_num < 0)
     return;
 
-  vector<int> selected = selected_indexes(file_programs_wxlist);
   sleigh.editor->move_within_synth(selected, prog_num);
+  sledge_programs_wxlist->select_indexes(prog_num, num_selected);
 }
 
 // ================ standard menu items ================
@@ -244,10 +262,6 @@ void Frame::OnSaveAs(wxCommandEvent &_event) {
 
 // ================ helpers ================
 
-void Frame::initialize() {
-  update();
-}
-
 void Frame::load(wxString path) {
   if (access(path, F_OK) != 0) {
     wxString err = wxString::Format("File '%s' does not exist", path);
@@ -285,13 +299,13 @@ void Frame::update_lists() {
   update_list(sledge_programs_wxlist, &sleigh.editor->sledge.programs[0]);
 }
 
-void Frame::update_list(wxListCtrl *lbox, SledgeProgram *programs) {
+void Frame::update_list(wxListView *lbox, SledgeProgram *programs) {
   lbox->ClearAll();
   for (int i = 0; i < sizeof(COLUMN_HEADERS) / sizeof(const char * const); ++i) {
     lbox->InsertColumn(i, COLUMN_HEADERS[i]);
     lbox->SetColumnWidth(i, COLUMN_WIDTHS[i]);
   }
-  for (int i = 0; i < NUM_SLEDGE_PROGRAMS; ++i) {
+  for (int i = 0; i < NUM_SLEDGE_PROGRAMS-1; ++i) {
     lbox->InsertItem(i, wxString::Format("%03d", i+1));
     lbox->SetItem(i, 1, programs[i].name_str());
     lbox->SetItem(i, 2, programs[i].category_str());
@@ -321,21 +335,8 @@ void Frame::update_menu_items() {
   menu_bar->FindItem(ID_MoveWithinSynth, nullptr)->Enable(any_synth_selected);
 }
 
-// Returns -1 if cancelled
+// Accepts 1-999, returns 0-998.  Returns -1 if cancelled.
 int Frame::get_program_number(const char * const prompt) {
-  wxNumberEntryDialog dialog(this, prompt, "Destination", "Target Sledge Program", 0, 0, 999);
-  return (dialog.ShowModal() == wxID_OK) ? dialog.GetValue() : -1;
-}
-
-std::vector<int> Frame::selected_indexes(FrameListCtrl *list) {
-  vector<int> selected;
-  long index = -1;
-
-  while (true) {
-    index = list->GetNextItem(index, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-    if (index == -1)
-        break;
-    selected.push_back((int)index);
-}
-  return selected;
+  wxNumberEntryDialog dialog(this, prompt, "Destination", "Target Sledge Program", 1, 1, 999);
+  return (dialog.ShowModal() == wxID_OK) ? (dialog.GetValue() - 1) : -1;
 }

@@ -9,6 +9,7 @@
 #endif
 #include "events.h"
 #include "../sleigh.h"
+#include "../observer.h"
 
 enum {
   ID_TransmitSelected = 1,
@@ -22,9 +23,9 @@ enum {
 
 class wxTextCtrl;
 class SledgeProgram;
-class FrameListCtrl;
+class FrameListView;
 
-class Frame: public wxFrame {
+class Frame: public wxFrame, public Observer {
 public:
   Frame(const wxString& title, Sleigh &sleigh);
   virtual ~Frame() {}
@@ -33,7 +34,9 @@ public:
   void load(wxString path);
   void save();
 
+
   void update(wxCommandEvent& event) { update(); }
+  virtual void update(Observable *o) { update(); }
   void update();
 
   void update_menu_items(wxCommandEvent& event) { update_menu_items(); }
@@ -56,8 +59,8 @@ private:
   Sleigh &sleigh;
   wxString file_path;
   wxMenuBar *menu_bar;
-  FrameListCtrl *file_programs_wxlist;
-  FrameListCtrl *sledge_programs_wxlist;
+  FrameListView *file_programs_wxlist;
+  FrameListView *sledge_programs_wxlist;
   wxButton *xmit_button;
   wxButton *pc_button;
   wxButton *xfer_button;
@@ -84,11 +87,10 @@ private:
   void state_changed(wxCommandEvent &event);
 
   void update_lists();
-  void update_list(wxListCtrl *lbox, SledgeProgram *programs);
+  void update_list(wxListView *lbox, SledgeProgram *programs);
   void update_buttons();
 
   int get_program_number(const char * const prompt);
-  std::vector<int> selected_indexes(FrameListCtrl *list);
 
   wxDECLARE_EVENT_TABLE();
 };

@@ -2,9 +2,8 @@
 #define SLEIGH_H
 
 #include <pthread.h>
+#include "types.h"
 #include "sledge.h"
-
-typedef unsigned char byte;
 
 struct opts {
   bool testing;
@@ -32,7 +31,6 @@ public:
   ~Sleigh();
 
   void print_sources_and_destinations();
-  void initialize(struct opts *opts);
   void start(struct opts *opts);
   void stop();
 

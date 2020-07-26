@@ -1,6 +1,7 @@
 #include <wx/cmdline.h>
 #include "app.h"
 #include "frame.h"
+#include "../utils.h"
 #include "../sleigh.h"
 
 static const wxCmdLineEntryDesc g_cmdLineDesc [] = {
@@ -43,13 +44,12 @@ bool App::OnInit() {
   if (!wxApp::OnInit())
     return false;
 
+  init_debug(opts.debug);
   sleigh.start(&opts);
   frame = new Frame("Sleigh", sleigh);
   frame->Show(true);
   SetTopWindow(frame);
-  if (command_line_path.IsEmpty())
-    frame->initialize();
-  else
+  if (!command_line_path.IsEmpty())
     frame->load(command_line_path);
   return true;
 }

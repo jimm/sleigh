@@ -7,7 +7,6 @@
 #include "sledge.h"
 #include "editor.h"
 #include "utils.h"
-#include "init_program.h"
 
 #define CFSTRING_BUF_SIZE 512
 
@@ -43,28 +42,14 @@ void Sleigh::print_sources_and_destinations() {
   }
 }
 
-void Sleigh::initialize(struct opts *opts) {
-  init_debug(opts->debug);
-  debug("Sleigh::initialize\n");
-  init_init_program();
-  init_midi(opts);
-}
-
 void Sleigh::start(struct opts *opts) {
-  initialize(opts);
+  debug("Sleigh::start\n");
+  init_midi(opts);
   editor = new Editor(sledge, getenv("SLEIGH_SYSEX_DIR"));
-
-  // FIXME frame must observe sledge
-
-  // The editor must be added as an observer before the GUI is, so that
-  // programs received from the Sledge update the editor's current index
-  // before the GUI is redrawn.
-  // sledge.add_observer(&editor);
-  // sledge.add_observer(&gui);
-  // editor.add_observer(&gui);
 }
 
 void Sleigh::stop() {
+  debug("Sleigh::stop\n");
   OSStatus err = MIDIPortDisconnectSource(my_in_port, sledge_out_end_ref);
   if (err != 0)
     fprintf(stderr, "MIDIPortDisconnectSource error: %d\n", err);

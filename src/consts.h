@@ -2,7 +2,31 @@
 #define CONSTS_H
 
 // Sledge constants
+
+// Although there are 1000 program numbers 000-999, the Sledge only displays
+// 999, numbered "001" (index 000) through "999" (index 998).
 #define NUM_SLEDGE_PROGRAMS 1000
+
+#define SLEDGE_PROGRAM_SYSEX_LEN 0x188
+#define SLEDGE_PROGRAM_NAME_LEN 16
+#define SLEDGE_PROGRAM_MIDDLE_DATA_LEN \
+  (SLEDGE_PROGRAM_SYSEX_LEN - 7 - SLEDGE_PROGRAM_NAME_LEN - 17 - 3 - 16 - 6)
+
+#define WALDORF_MANUFACTURER_ID 0x3e
+
+#define SLEDGE_CATEGORY_INIT 0x00
+#define SLEDGE_CATEGORY_ARP  0x01
+#define SLEDGE_CATEGORY_ATMO 0x02
+#define SLEDGE_CATEGORY_BASS 0x03
+#define SLEDGE_CATEGORY_DRUM 0x04
+#define SLEDGE_CATEGORY_FX   0x05
+#define SLEDGE_CATEGORY_KEYS 0x06
+#define SLEDGE_CATEGORY_LEAD 0x07
+#define SLEDGE_CATEGORY_MONO 0x08
+#define SLEDGE_CATEGORY_PAD  0x09
+#define SLEDGE_CATEGORY_PERC 0x0a
+#define SLEDGE_CATEGORY_POLY 0x0b
+#define SLEDGE_CATEGORY_SEQ  0x0c
 
 // MIDI constants
 

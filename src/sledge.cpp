@@ -22,6 +22,8 @@ Sledge::Sledge(byte chan) : channel(chan), receiving_sysex(false) {
   sysex_allocated_size = SYSEX_CHUNK_SIZE;
   sysex_length = 0;
   sledge_instance = this;
+  for (int i = 0; i < NUM_SLEDGE_PROGRAMS; ++i)
+    programs[i].set_program_number(i);
 }
 
 Sledge::~Sledge() {
