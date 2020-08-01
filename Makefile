@@ -24,7 +24,7 @@ TEST_OBJ_FILTERS = src/wx/app_main.o
 
 CATCH_CATEGORY ?= ""
 
-.PHONY: all test install tags clean distclean
+.PHONY: all test install uninstall tags clean distclean
 
 all: $(NAME)
 
@@ -45,6 +45,9 @@ install:	$(bindir)/$(NAME)
 $(bindir)/$(NAME):	$(NAME)
 	cp ./$(NAME) $(bindir)
 	chmod 755 $(bindir)/$(NAME)
+
+uninstall:
+	rm -f $(bindir)/$(name)
 
 tags:	TAGS
 
