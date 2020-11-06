@@ -8,6 +8,9 @@
 
 #define SYSEX_CHUNK_SIZE 1024
 
+#define is_status(b) ((b) >= NOTE_OFF)
+#define is_realtime(b) ((b) >= CLOCK)
+
 static Sledge *sledge_instance;
 
 Sledge *Sledge_instance() {
@@ -45,13 +48,16 @@ void Sledge::receive_midi(const MIDIPacketList *packet_list) {
         break;
       case EOX:
         if (receiving_sysex) {
+        IS_EOX:
           receiving_sysex = false;
-          append_sysex_byte(b);
+          append_sysex_byte(EOX);
           sysex_received();
         }
         break;
       default:
-        if (receiving_sysex)
+        if (receiving_sysex && !is_realtime(b))
+          if (is_status(b))
+            goto IS_EOX;
           append_sysex_byte(b);
         break;
       }
